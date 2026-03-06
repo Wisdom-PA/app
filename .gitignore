@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build / Metro
+/build
+/dist
+*.tsbuildinfo
+.metro-health-check*
+
+# iOS
+ios/Pods/
+ios/build/
+ios/*.xcworkspace/xcuserdata/
+*.pbxuser
+
+# Android
+android/build/
+android/.gradle/
+android/app/build/
+*.apk
+*.aab
+*.keystore
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Test / coverage
+coverage/
+.jest/
+
+# OS
+.DS_Store
+Thumbs.db
