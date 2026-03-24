@@ -11,7 +11,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "storybook": "storybook dev -p 6006"
   },
   "dependencies": {
@@ -37,6 +37,10 @@
     "@storybook/react-native": "^8.0.0",
     "@storybook/addon-ondevice-controls": "^8.0.0",
     "@storybook/addon-ondevice-actions": "^8.0.0",
-    "eslint": "^8.57.0"
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^4.6.2"
   }
 }
