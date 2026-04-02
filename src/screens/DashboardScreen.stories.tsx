@@ -1,13 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { DashboardScreen } from './DashboardScreen';
 
-const meta: Meta<typeof DashboardScreen> = {
-  component: DashboardScreen,
+export default {
   title: 'Screens/DashboardScreen',
+  component: DashboardScreen,
 };
 
-export default meta;
-
-type Story = StoryObj<typeof DashboardScreen>;
-
-export const Default: Story = {};
+export const Default = {};
