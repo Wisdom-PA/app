@@ -1,24 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { ListItem } from './ListItem';
 
-const meta: Meta<typeof ListItem> = {
-  component: ListItem,
+export default {
   title: 'Components/ListItem',
+  component: ListItem,
 };
 
-export default meta;
-
-type Story = StoryObj<typeof ListItem>;
-
-export const TitleOnly: Story = {
+export const TitleOnly = {
   args: { title: 'Living room light' },
 };
 
-export const WithSubtitle: Story = {
+export const WithSubtitle = {
   args: { title: 'Living room light', subtitle: 'On · Brightness 80%' },
 };
 
-export const Pressable: Story = {
+export const Pressable = {
   args: {
     title: 'Evening lights',
     subtitle: 'Routine',

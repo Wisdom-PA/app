@@ -1,23 +1,18 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { Toggle } from './Toggle';
 
-const meta: Meta<typeof Toggle> = {
-  component: Toggle,
+export default {
   title: 'Components/Toggle',
+  component: Toggle,
 };
 
-export default meta;
-
-type Story = StoryObj<typeof Toggle>;
-
-export const Off: Story = {
+export const Off = {
   args: { label: 'Paranoid mode', value: false, onValueChange: () => {} },
 };
 
-export const On: Story = {
+export const On = {
   args: { label: 'Paranoid mode', value: true, onValueChange: () => {} },
 };
 
-export const Disabled: Story = {
+export const Disabled = {
   args: { label: 'Guest profile', value: false, onValueChange: () => {}, disabled: true },
 };
