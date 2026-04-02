@@ -1,6 +1,10 @@
-import { mockCubeApi } from '../mockCubeApi';
+import { mockCubeApi, resetMockCubeApiState } from '../mockCubeApi';
 
 describe('mockCubeApi', () => {
+  beforeEach(() => {
+    resetMockCubeApiState();
+  });
+
   it('getStatus returns status with version and ready', async () => {
     const status = await mockCubeApi.getStatus();
     expect(status.version).toBe('0.1.0');
@@ -12,6 +16,15 @@ describe('mockCubeApi', () => {
     const config = await mockCubeApi.getConfig();
     expect(config.device_name).toBeDefined();
     expect(config.default_privacy_mode).toBe('paranoid');
+  });
+
+  it('patchConfig updates config and getStatus privacy_mode', async () => {
+    await mockCubeApi.patchConfig({ device_name: 'Patched', default_privacy_mode: 'normal' });
+    const config = await mockCubeApi.getConfig();
+    expect(config.device_name).toBe('Patched');
+    expect(config.default_privacy_mode).toBe('normal');
+    const status = await mockCubeApi.getStatus();
+    expect(status.privacy_mode).toBe('normal');
   });
 
   it('getDevices returns device list', async () => {
@@ -34,5 +47,16 @@ describe('mockCubeApi', () => {
   it('getLogs returns log result', async () => {
     const result = await mockCubeApi.getLogs();
     expect(result.chains).toEqual([]);
+  });
+
+  it('createBackup returns octet-stream-sized buffer matching cube stub', async () => {
+    const buf = await mockCubeApi.createBackup();
+    const text = new TextDecoder().decode(buf);
+    expect(text).toBe('WISDOM-BACKUP-v0\n');
+  });
+
+  it('restoreBackup resolves', async () => {
+    const buf = new TextEncoder().encode('x').buffer;
+    await expect(mockCubeApi.restoreBackup(buf)).resolves.toBeUndefined();
   });
 });
