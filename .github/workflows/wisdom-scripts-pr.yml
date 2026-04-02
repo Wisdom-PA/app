@@ -1,0 +1,24 @@
+# Pulls latest Wisdom scripts on every PR/push to main (submodule or fresh clone).
+# Requires the scripts repo to exist at the URL below (fork: change org/repo in this file or use a repo variable).
+name: Wisdom scripts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Sync wisdom-scripts to latest main
+        uses: Wisdom-PA/scripts/.github/actions/wisdom-scripts-sync@main
+        with:
+          scripts-repo: https://github.com/Wisdom-PA/scripts.git
