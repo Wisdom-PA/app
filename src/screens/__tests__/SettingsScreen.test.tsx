@@ -39,7 +39,7 @@ describe('SettingsScreen', () => {
     fireEvent.changeText(screen.getByLabelText('Cube base URL'), '192.168.1.1');
     fireEvent.press(screen.getByLabelText('Save cube URL'));
     expect(screen.getByText('Invalid URL')).toBeTruthy();
-    expect(screen.getByText(/http:\/\//)).toBeTruthy();
+    expect(screen.getByText(/Enter a URL starting/)).toBeTruthy();
     fireEvent.press(screen.getByLabelText('OK'));
   });
 
