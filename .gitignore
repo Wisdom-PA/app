@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Expo local state (device history, dev server)
+.expo/
+
 # Build / Metro
 /build
 /dist
