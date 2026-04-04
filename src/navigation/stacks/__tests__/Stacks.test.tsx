@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { CubeApiProvider } from '../../../context/CubeApiContext';
 import { DevicesStack } from '../DevicesStack';
@@ -17,24 +17,34 @@ function wrap(children: React.ReactElement): React.ReactElement {
 }
 
 describe('DevicesStack', () => {
-  it('renders Devices screen content', () => {
+  it('renders Devices screen content', async () => {
     render(wrap(<DevicesStack />));
-    expect(screen.getByText(/Devices – list and control/)).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Living room light')).toBeTruthy();
+    });
   });
 });
 
 describe('RoutinesStack', () => {
-  it('renders Routines screen content', () => {
+  it('renders Routines screen content', async () => {
     render(wrap(<RoutinesStack />));
-    expect(screen.getByText(/Routines – triggers/)).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Evening lights')).toBeTruthy();
+    });
   });
 });
 
 describe('ProfilesStack', () => {
-  it('renders Profiles screen content', () => {
-    render(wrap(<ProfilesStack />));
-    expect(screen.getByText(/Profiles – adult/)).toBeTruthy();
-  });
+  it(
+    'renders Profiles screen content',
+    async () => {
+      render(wrap(<ProfilesStack />));
+      expect(
+        await screen.findByText('Role: Adult', { exact: true }, { timeout: 15000 })
+      ).toBeTruthy();
+    },
+    20000
+  );
 });
 
 describe('SettingsStack', () => {
@@ -45,8 +55,10 @@ describe('SettingsStack', () => {
 });
 
 describe('LogsStack', () => {
-  it('renders Logs screen content', () => {
+  it('renders Logs screen content', async () => {
     render(wrap(<LogsStack />));
-    expect(screen.getByText(/Logs – behaviour/)).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText(/No behaviour log chains yet/)).toBeTruthy();
+    });
   });
 });

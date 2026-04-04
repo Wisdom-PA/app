@@ -1,5 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react-native';
+import type { CubeApi } from '../../api/cubeApi';
+import { mockCubeApi } from '../../api/mockCubeApi';
 import { CubeApiProvider } from '../../context/CubeApiContext';
 import { DashboardScreen } from '../DashboardScreen';
 
@@ -22,5 +24,23 @@ describe('DashboardScreen', () => {
     await waitFor(() => {
       expect(screen.getByLabelText(/Dashboard status details/)).toBeTruthy();
     });
+  });
+
+  it('shows error when status API fails', async () => {
+    const failing: CubeApi = {
+      ...mockCubeApi,
+      getStatus: async () => {
+        throw new Error('unreachable');
+      },
+    };
+    render(
+      <CubeApiProvider cubeApiOverride={failing}>
+        <DashboardScreen />
+      </CubeApiProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText('unreachable')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Dashboard error')).toBeTruthy();
   });
 });

@@ -55,6 +55,62 @@ describe('createHttpCubeApi', () => {
     );
   });
 
+  it('getLogs uses /logs when no params', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ chains: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getLogs();
+
+    expect(global.fetch).toHaveBeenCalledWith('http://h/logs');
+  });
+
+  it('getDevices requests /devices', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ devices: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getDevices();
+    expect(global.fetch).toHaveBeenCalledWith('http://h/devices');
+  });
+
+  it('getRoutines requests /routines', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ routines: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getRoutines();
+    expect(global.fetch).toHaveBeenCalledWith('http://h/routines');
+  });
+
+  it('getProfiles requests /profiles', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ profiles: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getProfiles();
+    expect(global.fetch).toHaveBeenCalledWith('http://h/profiles');
+  });
+
+  it('getConfig requests /config', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getConfig();
+    expect(global.fetch).toHaveBeenCalledWith('http://h/config');
+  });
+
   it('createBackup returns arrayBuffer on success', async () => {
     const buf = new ArrayBuffer(2);
     global.fetch = jest.fn().mockResolvedValue({
@@ -66,6 +122,18 @@ describe('createHttpCubeApi', () => {
     const out = await api.createBackup();
     expect(out).toBe(buf);
     expect(global.fetch).toHaveBeenCalledWith('http://h/backup', { method: 'POST' });
+  });
+
+  it('createBackup throws when response is not ok', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Error',
+      text: async () => 'fail',
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await expect(api.createBackup()).rejects.toThrow('500');
   });
 
   it('throws when response is not ok', async () => {
@@ -95,5 +163,17 @@ describe('createHttpCubeApi', () => {
       headers: { 'Content-Type': 'application/octet-stream' },
       body: payload,
     });
+  });
+
+  it('restoreBackup throws when response is not ok', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: 'Bad',
+      text: async () => 'bad',
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await expect(api.restoreBackup(new ArrayBuffer(0))).rejects.toThrow('400');
   });
 });

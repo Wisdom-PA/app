@@ -26,7 +26,14 @@ function normalizeBaseUrl(url: string | null): string | null {
   return t.replace(/\/$/, '');
 }
 
-export function CubeApiProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
+export function CubeApiProvider({
+  children,
+  cubeApiOverride,
+}: {
+  children: React.ReactNode;
+  /** When set (e.g. Storybook or tests), replaces mock/HTTP client selection. */
+  cubeApiOverride?: CubeApi;
+}): React.JSX.Element {
   const [cubeBaseUrl, setCubeBaseUrlState] = useState<string | null>(null);
 
   const setCubeBaseUrl = useCallback((url: string | null) => {
@@ -34,11 +41,14 @@ export function CubeApiProvider({ children }: { children: React.ReactNode }): Re
   }, []);
 
   const cubeApi = useMemo((): CubeApi => {
+    if (cubeApiOverride != null) {
+      return cubeApiOverride;
+    }
     if (cubeBaseUrl == null) {
       return mockCubeApi;
     }
     return createHttpCubeApi(cubeBaseUrl);
-  }, [cubeBaseUrl]);
+  }, [cubeBaseUrl, cubeApiOverride]);
 
   const value = useMemo(
     (): CubeApiContextValue => ({
