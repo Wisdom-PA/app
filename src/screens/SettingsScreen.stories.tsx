@@ -1,10 +1,10 @@
 import React from 'react';
 import { CubeApiProvider } from '../context/CubeApiContext';
-import { DashboardScreen } from './DashboardScreen';
+import { SettingsScreen } from './SettingsScreen';
 
 export default {
-  title: 'Screens/DashboardScreen',
-  component: DashboardScreen,
+  title: 'Screens/SettingsScreen',
+  component: SettingsScreen,
   decorators: [
     (Story: React.ComponentType<object>): React.JSX.Element => (
       <CubeApiProvider>

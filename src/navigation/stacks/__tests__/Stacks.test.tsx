@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { CubeApiProvider } from '../../../context/CubeApiContext';
 import { DevicesStack } from '../DevicesStack';
 import { RoutinesStack } from '../RoutinesStack';
 import { ProfilesStack } from '../ProfilesStack';
@@ -8,7 +9,11 @@ import { SettingsStack } from '../SettingsStack';
 import { LogsStack } from '../LogsStack';
 
 function wrap(children: React.ReactElement): React.ReactElement {
-  return <NavigationContainer>{children}</NavigationContainer>;
+  return (
+    <CubeApiProvider>
+      <NavigationContainer>{children}</NavigationContainer>
+    </CubeApiProvider>
+  );
 }
 
 describe('DevicesStack', () => {
@@ -35,7 +40,7 @@ describe('ProfilesStack', () => {
 describe('SettingsStack', () => {
   it('renders Settings screen content', () => {
     render(wrap(<SettingsStack />));
-    expect(screen.getByText(/Settings – privacy/)).toBeTruthy();
+    expect(screen.getByText(/Cube connection/)).toBeTruthy();
   });
 });
 
