@@ -1,10 +1,57 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, waitFor } from '@testing-library/react-native';
+import type { CubeApi } from '../../api/cubeApi';
+import { mockCubeApi } from '../../api/mockCubeApi';
+import { CubeApiProvider } from '../../context/CubeApiContext';
 import { ProfilesScreen } from '../ProfilesScreen';
 
+function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
+  return render(<CubeApiProvider>{ui}</CubeApiProvider>);
+}
+
 describe('ProfilesScreen', () => {
-  it('renders placeholder text', () => {
-    render(<ProfilesScreen />);
-    expect(screen.getByText(/Profiles – adult/)).toBeTruthy();
+  it('loads profiles from mock API and exposes screen label', async () => {
+    renderWithProvider(<ProfilesScreen />);
+    expect(screen.getByLabelText('Profiles screen')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Adult')).toBeTruthy();
+    });
+    expect(screen.getByText('Guest')).toBeTruthy();
+    expect(screen.getByText(/Mock cube/)).toBeTruthy();
+  });
+
+  it('shows error when API fails', async () => {
+    const failing: CubeApi = {
+      ...mockCubeApi,
+      getProfiles: async () => {
+        throw new Error('Cube unavailable');
+      },
+    };
+    render(
+      <CubeApiProvider cubeApiOverride={failing}>
+        <ProfilesScreen />
+      </CubeApiProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText('Cube unavailable')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Profiles error')).toBeTruthy();
+  });
+
+  it('shows em dash for profile without role', async () => {
+    const api: CubeApi = {
+      ...mockCubeApi,
+      getProfiles: async () => ({
+        profiles: [{ id: 'p1', display_name: 'Name only' }],
+      }),
+    };
+    render(
+      <CubeApiProvider cubeApiOverride={api}>
+        <ProfilesScreen />
+      </CubeApiProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText('Role: —')).toBeTruthy();
+    });
   });
 });
