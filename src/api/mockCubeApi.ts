@@ -7,6 +7,7 @@ import type {
   ProfileList,
   LogQueryResult,
 } from './cubeApi.types';
+import type { CubeApi } from './cubeApi';
 
 const MOCK_STATUS: Status = {
   version: '0.1.0',
@@ -57,7 +58,7 @@ export function resetMockCubeApiState(): void {
  * Mock cube API client for development and tests.
  * Use in app when no real cube is connected; use in integration tests as stub.
  */
-export const mockCubeApi = {
+export const mockCubeApi: CubeApi = {
   getStatus: async (): Promise<Status> =>
     Promise.resolve({
       ...MOCK_STATUS,
