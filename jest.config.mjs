@@ -1,5 +1,7 @@
-module.exports = {
+/** @type {import('jest').Config} */
+export default {
   preset: 'jest-expo',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/*.test.[jt]s?(x)'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

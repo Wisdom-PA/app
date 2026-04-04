@@ -38,6 +38,6 @@ module.exports = {
     'dist/',
     'build/',
     'babel.config.js',
-    'jest.config.js',
+    'jest.config.mjs',
   ],
 };
