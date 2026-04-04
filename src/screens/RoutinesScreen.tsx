@@ -1,14 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { RoutineSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
+import { RetryLoadDialog } from '../components/RetryLoadDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
 
 export function RoutinesScreen(): React.JSX.Element {
@@ -16,6 +10,7 @@ export function RoutinesScreen(): React.JSX.Element {
   const [routines, setRoutines] = useState<RoutineSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryOpen, setRetryOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -39,6 +34,7 @@ export function RoutinesScreen(): React.JSX.Element {
   const sourceLabel = cubeBaseUrl == null ? 'Mock cube' : cubeBaseUrl;
 
   return (
+    <>
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.content}
@@ -58,12 +54,7 @@ export function RoutinesScreen(): React.JSX.Element {
           <Text style={styles.errorText}>{error}</Text>
           <Text
             style={styles.retry}
-            onPress={() => {
-              Alert.alert('Retry', 'Try loading routines again?', [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Retry', onPress: () => void load() },
-              ]);
-            }}
+            onPress={() => setRetryOpen(true)}
             accessibilityRole="button"
             accessibilityLabel="Retry loading routines"
           >
@@ -88,6 +79,13 @@ export function RoutinesScreen(): React.JSX.Element {
         </View>
       ) : null}
     </ScrollView>
+    <RetryLoadDialog
+      visible={retryOpen}
+      message="Try loading routines again?"
+      onClose={() => setRetryOpen(false)}
+      onRetry={() => void load()}
+    />
+    </>
   );
 }
 

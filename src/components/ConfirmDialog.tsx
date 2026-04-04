@@ -56,7 +56,7 @@ export function ConfirmDialog({
       >
         <Pressable
           style={[styles.sheet, { maxWidth }]}
-          onPress={(e) => e.stopPropagation()}
+          onPress={(e) => e?.stopPropagation?.()}
           accessibilityRole="none"
         >
           <Text style={styles.title} accessibilityRole="header">

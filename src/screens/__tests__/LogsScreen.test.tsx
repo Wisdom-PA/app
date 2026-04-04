@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
 import { CubeApiProvider } from '../../context/CubeApiContext';
@@ -36,6 +36,26 @@ describe('LogsScreen', () => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
     expect(screen.getByLabelText('Logs error')).toBeTruthy();
+  });
+
+  it('opens retry dialog from error state and can cancel', async () => {
+    const failing: CubeApi = {
+      ...mockCubeApi,
+      getLogs: async () => {
+        throw new Error('Cube unavailable');
+      },
+    };
+    render(
+      <CubeApiProvider cubeApiOverride={failing}>
+        <LogsScreen />
+      </CubeApiProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByText('Cube unavailable')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Retry loading logs'));
+    expect(screen.getByText('Try loading logs again?')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Cancel'));
   });
 
   it('shows summary when chains are returned', async () => {

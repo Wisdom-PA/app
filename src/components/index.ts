@@ -1,5 +1,7 @@
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+export { RetryLoadDialog } from './RetryLoadDialog';
+export type { RetryLoadDialogProps } from './RetryLoadDialog';
 export { ListItem } from './ListItem';
 export type { ListItemProps } from './ListItem';
 export { PlaceholderScreen } from './PlaceholderScreen';

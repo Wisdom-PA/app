@@ -58,4 +58,20 @@ describe('ConfirmDialog', () => {
     fireEvent.press(screen.getByLabelText('Dismiss dialog'));
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
+
+  it('does not dismiss when sheet content is pressed', () => {
+    const onDismiss = jest.fn();
+    render(
+      <ConfirmDialog
+        visible
+        title="T"
+        message="Sheet body"
+        primaryLabel="OK"
+        onPrimary={() => {}}
+        onDismiss={onDismiss}
+      />
+    );
+    fireEvent.press(screen.getByText('Sheet body'));
+    expect(onDismiss).not.toHaveBeenCalled();
+  });
 });
