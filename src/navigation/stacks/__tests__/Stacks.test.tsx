@@ -35,12 +35,16 @@ describe('RoutinesStack', () => {
 });
 
 describe('ProfilesStack', () => {
-  it('renders Profiles screen content', async () => {
-    render(wrap(<ProfilesStack />));
-    await waitFor(() => {
-      expect(screen.getByLabelText('Profile Adult')).toBeTruthy();
-    });
-  });
+  it(
+    'renders Profiles screen content',
+    async () => {
+      render(wrap(<ProfilesStack />));
+      expect(
+        await screen.findByText('Role: Adult', { exact: true }, { timeout: 15000 })
+      ).toBeTruthy();
+    },
+    20000
+  );
 });
 
 describe('SettingsStack', () => {

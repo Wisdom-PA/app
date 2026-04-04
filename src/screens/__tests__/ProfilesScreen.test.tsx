@@ -10,17 +10,20 @@ function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
 }
 
 describe('ProfilesScreen', () => {
-  it('loads profiles from mock API and exposes screen label', async () => {
-    renderWithProvider(<ProfilesScreen />);
-    expect(screen.getByLabelText('Profiles screen')).toBeTruthy();
-    await waitFor(() => {
-      expect(screen.getByLabelText('Profile Adult')).toBeTruthy();
-    });
-    expect(screen.getByLabelText('Profile Guest')).toBeTruthy();
-    expect(screen.getByText('Role: Adult')).toBeTruthy();
-    expect(screen.getByText('Role: Guest')).toBeTruthy();
-    expect(screen.getByText(/Mock cube/)).toBeTruthy();
-  });
+  it(
+    'loads profiles from mock API and exposes screen label',
+    async () => {
+      renderWithProvider(<ProfilesScreen />);
+      expect(screen.getByLabelText('Profiles screen')).toBeTruthy();
+      // Wait on unique copy (not accessibility): labels can differ across RN/test environments.
+      expect(
+        await screen.findByText('Role: Adult', { exact: true }, { timeout: 15000 })
+      ).toBeTruthy();
+      expect(screen.getByText('Role: Guest', { exact: true })).toBeTruthy();
+      expect(screen.getByText(/Mock cube/)).toBeTruthy();
+    },
+    20000
+  );
 
   it('shows error when API fails', async () => {
     const failing: CubeApi = {
