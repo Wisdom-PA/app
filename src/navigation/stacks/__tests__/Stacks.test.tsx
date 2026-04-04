@@ -38,7 +38,7 @@ describe('ProfilesStack', () => {
   it('renders Profiles screen content', async () => {
     render(wrap(<ProfilesStack />));
     await waitFor(() => {
-      expect(screen.getByText('Adult')).toBeTruthy();
+      expect(screen.getByLabelText('Profile Adult')).toBeTruthy();
     });
   });
 });

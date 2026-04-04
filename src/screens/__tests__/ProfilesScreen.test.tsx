@@ -14,9 +14,11 @@ describe('ProfilesScreen', () => {
     renderWithProvider(<ProfilesScreen />);
     expect(screen.getByLabelText('Profiles screen')).toBeTruthy();
     await waitFor(() => {
-      expect(screen.getByText('Adult')).toBeTruthy();
+      expect(screen.getByLabelText('Profile Adult')).toBeTruthy();
     });
-    expect(screen.getByText('Guest')).toBeTruthy();
+    expect(screen.getByLabelText('Profile Guest')).toBeTruthy();
+    expect(screen.getByText('Role: Adult')).toBeTruthy();
+    expect(screen.getByText('Role: Guest')).toBeTruthy();
     expect(screen.getByText(/Mock cube/)).toBeTruthy();
   });
 
