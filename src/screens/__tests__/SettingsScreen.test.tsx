@@ -1,18 +1,9 @@
 import React from 'react';
-import { Alert } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { CubeApiProvider } from '../../context/CubeApiContext';
 import { SettingsScreen } from '../SettingsScreen';
 
 describe('SettingsScreen', () => {
-  beforeEach(() => {
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
   it('renders cube connection section', () => {
     render(
       <CubeApiProvider>
@@ -33,14 +24,13 @@ describe('SettingsScreen', () => {
     );
     fireEvent.changeText(screen.getByLabelText('Cube base URL'), 'http://192.168.0.5:8080');
     fireEvent.press(screen.getByLabelText('Save cube URL'));
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'Saved',
-      expect.stringContaining('192.168.0.5:8080')
-    );
+    expect(screen.getByText('Saved')).toBeTruthy();
+    expect(screen.getByText(/Cube base URL set to http:\/\/192.168.0.5:8080/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('OK'));
     expect(screen.getByText(/Current: http:\/\/192.168.0.5:8080/)).toBeTruthy();
   });
 
-  it('shows invalid URL alert when scheme is missing', () => {
+  it('shows invalid URL dialog when scheme is missing', () => {
     render(
       <CubeApiProvider>
         <SettingsScreen />
@@ -48,10 +38,9 @@ describe('SettingsScreen', () => {
     );
     fireEvent.changeText(screen.getByLabelText('Cube base URL'), '192.168.1.1');
     fireEvent.press(screen.getByLabelText('Save cube URL'));
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'Invalid URL',
-      expect.stringContaining('http://')
-    );
+    expect(screen.getByText('Invalid URL')).toBeTruthy();
+    expect(screen.getByText(/Enter a URL starting/)).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('OK'));
   });
 
   it('saves empty field as mock cube', () => {
@@ -61,11 +50,12 @@ describe('SettingsScreen', () => {
       </CubeApiProvider>
     );
     fireEvent.press(screen.getByLabelText('Save cube URL'));
-    expect(Alert.alert).toHaveBeenCalledWith('Saved', 'Using mock cube API.');
+    expect(screen.getByText('Saved')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('OK'));
     expect(screen.getByText(/Current: Mock cube API/)).toBeTruthy();
   });
 
-  it('use mock clears URL and shows alert', () => {
+  it('use mock clears URL and shows dialog', () => {
     render(
       <CubeApiProvider>
         <SettingsScreen />
@@ -73,8 +63,10 @@ describe('SettingsScreen', () => {
     );
     fireEvent.changeText(screen.getByLabelText('Cube base URL'), 'http://example.com');
     fireEvent.press(screen.getByLabelText('Save cube URL'));
+    fireEvent.press(screen.getByLabelText('OK'));
     fireEvent.press(screen.getByLabelText('Use mock cube'));
-    expect(Alert.alert).toHaveBeenCalledWith('Saved', 'Using mock cube API.');
+    expect(screen.getByText('Saved')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('OK'));
     expect(screen.getByText(/Current: Mock cube API/)).toBeTruthy();
   });
 });

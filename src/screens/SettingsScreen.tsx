@@ -1,98 +1,113 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+
+type Feedback = { title: string; message: string } | null;
 
 export function SettingsScreen(): React.JSX.Element {
   const { cubeBaseUrl, setCubeBaseUrl } = useCubeApiContext();
   const [draft, setDraft] = useState('');
+  const [feedback, setFeedback] = useState<Feedback>(null);
 
   useEffect(() => {
     setDraft(cubeBaseUrl ?? '');
   }, [cubeBaseUrl]);
 
+  const dismissFeedback = (): void => {
+    setFeedback(null);
+  };
+
   const onSave = (): void => {
     const t = draft.trim();
     if (t === '') {
       setCubeBaseUrl(null);
-      Alert.alert('Saved', 'Using mock cube API.');
+      setFeedback({ title: 'Saved', message: 'Using mock cube API.' });
       return;
     }
     if (!/^https?:\/\//i.test(t)) {
-      Alert.alert('Invalid URL', 'Enter a URL starting with http:// or https://, or clear the field to use the mock.');
+      setFeedback({
+        title: 'Invalid URL',
+        message:
+          'Enter a URL starting with http:// or https://, or clear the field to use the mock.',
+      });
       return;
     }
     setCubeBaseUrl(t);
-    Alert.alert('Saved', `Cube base URL set to ${t.replace(/\/$/, '')}.`);
+    setFeedback({ title: 'Saved', message: `Cube base URL set to ${t.replace(/\/$/, '')}.` });
   };
 
   const onUseMock = (): void => {
     setDraft('');
     setCubeBaseUrl(null);
-    Alert.alert('Saved', 'Using mock cube API.');
+    setFeedback({ title: 'Saved', message: 'Using mock cube API.' });
   };
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      accessibilityLabel="Settings"
-    >
-      <Text style={styles.heading}>Cube connection</Text>
-      <Text style={styles.help}>
-        For a dev cube on your LAN, enter its base URL (same host/port as the HTTP gateway). Leave
-        blank to use the built-in mock API.
-      </Text>
-
-      <Text
-        style={styles.label}
-        accessibilityRole="header"
+    <>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        accessibilityLabel="Settings"
       >
-        Base URL
-      </Text>
-      <TextInput
-        style={styles.input}
-        value={draft}
-        onChangeText={setDraft}
-        placeholder="http://192.168.1.10:8080"
-        placeholderTextColor="#888"
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="url"
-        accessibilityLabel="Cube base URL"
-        accessibilityHint="HTTP or HTTPS URL of the cube API, or leave empty for mock"
+        <Text style={styles.heading}>Cube connection</Text>
+        <Text style={styles.help}>
+          For a dev cube on your LAN, enter its base URL (same host/port as the HTTP gateway). Leave
+          blank to use the built-in mock API.
+        </Text>
+
+        <Text
+          style={styles.label}
+          accessibilityRole="header"
+        >
+          Base URL
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={draft}
+          onChangeText={setDraft}
+          placeholder="http://192.168.1.10:8080"
+          placeholderTextColor="#888"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          accessibilityLabel="Cube base URL"
+          accessibilityHint="HTTP or HTTPS URL of the cube API, or leave empty for mock"
+        />
+
+        <View style={styles.row}>
+          <Pressable
+            style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+            onPress={onSave}
+            accessibilityLabel="Save cube URL"
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>Save</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
+            onPress={onUseMock}
+            accessibilityLabel="Use mock cube"
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonSecondaryText}>Use mock</Text>
+          </Pressable>
+        </View>
+
+        <Text style={styles.status}>
+          Current: {cubeBaseUrl == null ? 'Mock cube API' : cubeBaseUrl}
+        </Text>
+      </ScrollView>
+
+      <ConfirmDialog
+        visible={feedback != null}
+        title={feedback?.title ?? ''}
+        message={feedback?.message ?? ''}
+        primaryLabel="OK"
+        onPrimary={dismissFeedback}
+        onDismiss={dismissFeedback}
       />
-
-      <View style={styles.row}>
-        <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-          onPress={onSave}
-          accessibilityLabel="Save cube URL"
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>Save</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [styles.buttonSecondary, pressed && styles.buttonPressed]}
-          onPress={onUseMock}
-          accessibilityLabel="Use mock cube"
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonSecondaryText}>Use mock</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.status}>
-        Current: {cubeBaseUrl == null ? 'Mock cube API' : cubeBaseUrl}
-      </Text>
-    </ScrollView>
+    </>
   );
 }
 
