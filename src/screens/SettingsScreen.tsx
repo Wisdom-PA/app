@@ -1,14 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
 
 type Feedback = { title: string; message: string } | null;
 
 export function SettingsScreen(): React.JSX.Element {
-  const { cubeBaseUrl, setCubeBaseUrl } = useCubeApiContext();
+  const { cubeApi, cubeBaseUrl, setCubeBaseUrl } = useCubeApiContext();
   const [draft, setDraft] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [lastBackupPayload, setLastBackupPayload] = useState<ArrayBuffer | null>(null);
 
   useEffect(() => {
     setDraft(cubeBaseUrl ?? '');
@@ -41,6 +53,42 @@ export function SettingsScreen(): React.JSX.Element {
     setDraft('');
     setCubeBaseUrl(null);
     setFeedback({ title: 'Saved', message: 'Using mock cube API.' });
+  };
+
+  const onCreateBackup = async (): Promise<void> => {
+    setBackupLoading(true);
+    try {
+      const buf = await cubeApi.createBackup();
+      setLastBackupPayload(buf.slice(0));
+      setFeedback({
+        title: 'Backup created',
+        message: `Received ${buf.byteLength} bytes. Use “Restore last backup” to send this payload back to the cube in this session.`,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Backup failed.';
+      setFeedback({ title: 'Backup failed', message: msg });
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const runRestore = async (): Promise<void> => {
+    if (lastBackupPayload == null) {
+      return;
+    }
+    setRestoreLoading(true);
+    try {
+      await cubeApi.restoreBackup(lastBackupPayload);
+      setFeedback({
+        title: 'Restore sent',
+        message: 'The cube accepted the restore request.',
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Restore failed.';
+      setFeedback({ title: 'Restore failed', message: msg });
+    } finally {
+      setRestoreLoading(false);
+    }
   };
 
   return (
@@ -97,6 +145,50 @@ export function SettingsScreen(): React.JSX.Element {
         <Text style={styles.status}>
           Current: {cubeBaseUrl == null ? 'Mock cube API' : cubeBaseUrl}
         </Text>
+
+        <Text style={[styles.heading, styles.sectionHeading]}>Backup & restore</Text>
+        <Text style={styles.help}>
+          Create a backup from the cube (POST /backup). Restore sends the last backup payload in this
+          session to the cube (POST /restore). On a real device, prefer exporting the file from a
+          future release; this flow is enough for development and automated tests.
+        </Text>
+
+        <View style={styles.row}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              (backupLoading || restoreLoading) && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => void onCreateBackup()}
+            disabled={backupLoading || restoreLoading}
+            accessibilityLabel="Create backup from cube"
+            accessibilityRole="button"
+          >
+            {backupLoading ? (
+              <ActivityIndicator color="#fff" accessibilityLabel="Creating backup" />
+            ) : (
+              <Text style={styles.buttonText}>Create backup</Text>
+            )}
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.buttonSecondary,
+              (restoreLoading || lastBackupPayload == null || backupLoading) && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => setRestoreConfirmOpen(true)}
+            disabled={restoreLoading || lastBackupPayload == null || backupLoading}
+            accessibilityLabel="Restore last backup to cube"
+            accessibilityRole="button"
+          >
+            {restoreLoading ? (
+              <ActivityIndicator color="#2563eb" accessibilityLabel="Restoring backup" />
+            ) : (
+              <Text style={styles.buttonSecondaryText}>Restore last backup</Text>
+            )}
+          </Pressable>
+        </View>
       </ScrollView>
 
       <ConfirmDialog
@@ -106,6 +198,20 @@ export function SettingsScreen(): React.JSX.Element {
         primaryLabel="OK"
         onPrimary={dismissFeedback}
         onDismiss={dismissFeedback}
+      />
+
+      <ConfirmDialog
+        visible={restoreConfirmOpen}
+        title="Restore backup?"
+        message="This POSTs the last backup payload to the cube. Only continue if you trust this cube."
+        secondaryLabel="Cancel"
+        onSecondary={() => setRestoreConfirmOpen(false)}
+        primaryLabel="Restore"
+        onPrimary={() => {
+          setRestoreConfirmOpen(false);
+          void runRestore();
+        }}
+        onDismiss={() => setRestoreConfirmOpen(false)}
       />
     </>
   );
@@ -120,6 +226,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+  },
+  sectionHeading: {
+    marginTop: 8,
   },
   help: {
     fontSize: 14,
@@ -157,6 +266,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 12,
     marginBottom: 8,
+    minWidth: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
   buttonSecondary: {
     borderWidth: 1,
@@ -165,7 +278,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 8,
+    minWidth: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
+  buttonDisabled: { opacity: 0.5 },
   buttonPressed: { opacity: 0.85 },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   buttonSecondaryText: { color: '#2563eb', fontWeight: '600', fontSize: 16 },
