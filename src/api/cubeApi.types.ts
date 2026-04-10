@@ -6,16 +6,20 @@ export interface Status {
   version: string;
   ready: boolean;
   privacy_mode?: 'paranoid' | 'normal';
+  /** When true, cube blocks outbound internet (global offline mode). */
+  global_offline?: boolean;
 }
 
 export interface DeviceConfig {
   device_name?: string;
   default_privacy_mode?: 'paranoid' | 'normal';
+  global_offline?: boolean;
 }
 
 export interface DeviceConfigPatch {
   device_name?: string;
   default_privacy_mode?: 'paranoid' | 'normal';
+  global_offline?: boolean;
 }
 
 export interface DeviceSummary {
@@ -23,6 +27,31 @@ export interface DeviceSummary {
   name?: string;
   type?: string;
   room?: string;
+  power?: boolean;
+  /** Normalized 0.0–1.0 when dimmable. */
+  brightness?: number;
+}
+
+export interface DeviceStatePatch {
+  power?: boolean;
+  brightness?: number;
+}
+
+export interface ChatReply {
+  reply: string;
+  source: 'on_device' | 'online';
+}
+
+export interface InternetActivityEvent {
+  id?: string;
+  at?: string;
+  service_category?: string;
+  summary?: string;
+  profile_display_name?: string;
+}
+
+export interface InternetActivityList {
+  events: InternetActivityEvent[];
 }
 
 export interface DeviceList {

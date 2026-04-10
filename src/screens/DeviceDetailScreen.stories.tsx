@@ -19,7 +19,14 @@ export const Default = (): React.JSX.Element => (
         component={DeviceDetailScreen}
         options={{ title: 'Living room light' }}
         initialParams={{
-          device: { id: 'light-1', name: 'Living room light', type: 'light', room: 'Living room' },
+          device: {
+            id: 'light-1',
+            name: 'Living room light',
+            type: 'light',
+            room: 'Living room',
+            power: true,
+            brightness: 0.75,
+          },
         }}
       />
     </Stack.Navigator>

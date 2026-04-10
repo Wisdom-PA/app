@@ -3,9 +3,13 @@ import type {
   DeviceConfig,
   DeviceConfigPatch,
   DeviceList,
+  DeviceSummary,
+  DeviceStatePatch,
   RoutineList,
   ProfileList,
   LogQueryResult,
+  ChatReply,
+  InternetActivityList,
 } from './cubeApi.types';
 
 /**
@@ -16,9 +20,12 @@ export interface CubeApi {
   getConfig(): Promise<DeviceConfig>;
   patchConfig(patch: DeviceConfigPatch): Promise<DeviceConfig>;
   getDevices(): Promise<DeviceList>;
+  patchDevice(deviceId: string, patch: DeviceStatePatch): Promise<DeviceSummary>;
   getRoutines(): Promise<RoutineList>;
   getProfiles(): Promise<ProfileList>;
   getLogs(params?: { since?: string; limit?: number }): Promise<LogQueryResult>;
+  sendChat(message: string): Promise<ChatReply>;
+  getInternetActivity(): Promise<InternetActivityList>;
   createBackup(): Promise<ArrayBuffer>;
   restoreBackup(payload: ArrayBuffer): Promise<void>;
 }
@@ -61,6 +68,15 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
       const r = await fetch(joinUrl(baseUrl, '/devices'));
       return readJson<DeviceList>(r);
     },
+    async patchDevice(deviceId, patch) {
+      const path = `/devices/${encodeURIComponent(deviceId)}`;
+      const r = await fetch(joinUrl(baseUrl, path), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      return readJson<DeviceSummary>(r);
+    },
     async getRoutines() {
       const r = await fetch(joinUrl(baseUrl, '/routines'));
       return readJson<RoutineList>(r);
@@ -81,6 +97,18 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
       const path = qs ? `/logs?${qs}` : '/logs';
       const r = await fetch(joinUrl(baseUrl, path));
       return readJson<LogQueryResult>(r);
+    },
+    async sendChat(message) {
+      const r = await fetch(joinUrl(baseUrl, '/chat'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+      return readJson<ChatReply>(r);
+    },
+    async getInternetActivity() {
+      const r = await fetch(joinUrl(baseUrl, '/internet-activity'));
+      return readJson<InternetActivityList>(r);
     },
     async createBackup() {
       const r = await fetch(joinUrl(baseUrl, '/backup'), { method: 'POST' });

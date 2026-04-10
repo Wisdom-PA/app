@@ -16,6 +16,8 @@ describe('DashboardScreen', () => {
     renderWithProvider(<DashboardScreen />);
     expect(await screen.findByText('0.1.0', {}, asyncWaitOptions)).toBeTruthy();
     expect(screen.getByText(/Mock cube/)).toBeTruthy();
+    expect(await screen.findByText('Global offline', {}, asyncWaitOptions)).toBeTruthy();
+    expect(screen.getByText('Off')).toBeTruthy();
   }, 35000);
 
   it('has dashboard accessibility label', async () => {

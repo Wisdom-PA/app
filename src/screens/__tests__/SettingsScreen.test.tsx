@@ -1,10 +1,11 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
 import { CubeApiProvider } from '../../context/CubeApiContext';
+import { SettingsStack } from '../../navigation/stacks/SettingsStack';
 import * as backupVault from '../../storage/backupVault';
-import { SettingsScreen } from '../SettingsScreen';
 
 jest.mock('../../storage/backupVault', () => ({
   saveEncryptedBackup: jest.fn().mockResolvedValue(undefined),
@@ -16,7 +17,9 @@ jest.mock('../../storage/backupVault', () => ({
 async function renderSettings(cubeApiOverride?: CubeApi): Promise<void> {
   render(
     <CubeApiProvider cubeApiOverride={cubeApiOverride}>
-      <SettingsScreen />
+      <NavigationContainer>
+        <SettingsStack />
+      </NavigationContainer>
     </CubeApiProvider>
   );
   await waitFor(() => {

@@ -7,6 +7,7 @@ import { RoutinesStack } from '../RoutinesStack';
 import { ProfilesStack } from '../ProfilesStack';
 import { SettingsStack } from '../SettingsStack';
 import { LogsStack } from '../LogsStack';
+import { ChatStack } from '../ChatStack';
 
 function wrap(children: React.ReactElement): React.ReactElement {
   return (
@@ -87,6 +88,23 @@ describe('SettingsStack', () => {
   it('renders Settings screen content', () => {
     render(wrap(<SettingsStack />));
     expect(screen.getByText(/Cube connection/)).toBeTruthy();
+  });
+
+  it('navigates to cube settings from list', async () => {
+    render(wrap(<SettingsStack />));
+    fireEvent.press(screen.getByLabelText('Open cube settings'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Cube settings')).toBeTruthy();
+    });
+  });
+});
+
+describe('ChatStack', () => {
+  it('renders Chat screen', async () => {
+    render(wrap(<ChatStack />));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Chat screen')).toBeTruthy();
+    });
   });
 });
 

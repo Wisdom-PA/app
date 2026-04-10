@@ -27,11 +27,45 @@ describe('mockCubeApi', () => {
     expect(status.privacy_mode).toBe('normal');
   });
 
-  it('getDevices returns device list', async () => {
+  it('getDevices returns device list with power and brightness', async () => {
     const list = await mockCubeApi.getDevices();
     expect(list.devices).toHaveLength(2);
     expect(list.devices[0].id).toBe('light-1');
     expect(list.devices[0].name).toContain('Living room');
+    expect(list.devices[0].power).toBe(true);
+    expect(list.devices[1].power).toBe(false);
+  });
+
+  it('patchConfig updates global_offline and getStatus reflects it', async () => {
+    await mockCubeApi.patchConfig({ global_offline: true });
+    const status = await mockCubeApi.getStatus();
+    expect(status.global_offline).toBe(true);
+    const config = await mockCubeApi.getConfig();
+    expect(config.global_offline).toBe(true);
+  });
+
+  it('patchDevice updates device state', async () => {
+    const updated = await mockCubeApi.patchDevice('light-2', { power: true, brightness: 0.5 });
+    expect(updated.power).toBe(true);
+    expect(updated.brightness).toBe(0.5);
+    const list = await mockCubeApi.getDevices();
+    expect(list.devices.find((d) => d.id === 'light-2')?.brightness).toBe(0.5);
+  });
+
+  it('patchDevice throws for unknown id', async () => {
+    await expect(mockCubeApi.patchDevice('nope', { power: true })).rejects.toThrow('404');
+  });
+
+  it('sendChat returns stub reply', async () => {
+    const r = await mockCubeApi.sendChat('hello');
+    expect(r.reply).toContain('hello');
+    expect(r.source).toBe('on_device');
+  });
+
+  it('getInternetActivity returns events', async () => {
+    const r = await mockCubeApi.getInternetActivity();
+    expect(r.events.length).toBeGreaterThan(0);
+    expect(r.events[0].summary).toBeDefined();
   });
 
   it('getRoutines returns routine list', async () => {

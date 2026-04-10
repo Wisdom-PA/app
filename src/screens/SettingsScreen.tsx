@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -9,7 +11,9 @@ import {
   View,
 } from 'react-native';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ListItem } from '../components/ListItem';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import type { SettingsStackParamList } from '../navigation/paramLists';
 import {
   clearEncryptedBackup,
   hasEncryptedBackup,
@@ -19,7 +23,10 @@ import {
 
 type Feedback = { title: string; message: string } | null;
 
+type SettingsNav = NativeStackNavigationProp<SettingsStackParamList, 'SettingsList'>;
+
 export function SettingsScreen(): React.JSX.Element {
+  const navigation = useNavigation<SettingsNav>();
   const { cubeApi, cubeBaseUrl, setCubeBaseUrl } = useCubeApiContext();
   const [draft, setDraft] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
@@ -221,6 +228,33 @@ export function SettingsScreen(): React.JSX.Element {
         <Text style={styles.status}>
           Current: {cubeBaseUrl == null ? 'Mock cube API' : cubeBaseUrl}
         </Text>
+
+        <Text style={[styles.heading, styles.sectionHeading]}>Cube & connectivity</Text>
+        <ListItem
+          title="Cube settings"
+          subtitle="Name, default privacy, global offline"
+          onPress={() => navigation.navigate('CubeSettings')}
+          accessibilityLabel="Open cube settings"
+          accessibilityHint="Opens cube configuration from the API"
+        />
+        <ListItem
+          title="Internet activity"
+          subtitle="Transparency log of outbound calls"
+          onPress={() => navigation.navigate('InternetActivity')}
+          accessibilityLabel="Open internet activity"
+        />
+        <ListItem
+          title="Pairing"
+          subtitle="Bluetooth setup (placeholder)"
+          onPress={() => navigation.navigate('PairingPlaceholder')}
+          accessibilityLabel="Open pairing placeholder"
+        />
+        <ListItem
+          title="Wi‑Fi setup"
+          subtitle="Provisioning flow (placeholder)"
+          onPress={() => navigation.navigate('WiFiPlaceholder')}
+          accessibilityLabel="Open Wi-Fi setup placeholder"
+        />
 
         <Text style={[styles.heading, styles.sectionHeading]}>Backup & restore</Text>
         <Text style={styles.help}>

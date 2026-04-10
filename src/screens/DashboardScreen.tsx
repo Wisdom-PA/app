@@ -76,6 +76,13 @@ export function DashboardScreen(): React.JSX.Element {
             subtitle={status.privacy_mode ?? '—'}
             accessibilityLabel={`Privacy mode ${status.privacy_mode ?? 'unknown'}`}
           />
+          <ListItem
+            title="Global offline"
+            subtitle={
+              status.global_offline === true ? 'On' : status.global_offline === false ? 'Off' : '—'
+            }
+            accessibilityLabel={`Global offline ${status.global_offline === true ? 'on' : status.global_offline === false ? 'off' : 'unknown'}`}
+          />
         </View>
       ) : null}
     </ScrollView>

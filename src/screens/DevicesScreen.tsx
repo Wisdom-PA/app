@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { DeviceSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
@@ -36,6 +36,20 @@ export function DevicesScreen(): React.JSX.Element {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const grouped = useMemo(() => {
+    if (devices == null) {
+      return [];
+    }
+    const map = new Map<string, DeviceSummary[]>();
+    for (const d of devices) {
+      const room = d.room != null && d.room !== '' ? d.room : 'Other';
+      const list = map.get(room) ?? [];
+      list.push(d);
+      map.set(room, list);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [devices]);
 
   const sourceLabel = cubeBaseUrl == null ? 'Mock cube' : cubeBaseUrl;
 
@@ -75,15 +89,34 @@ export function DevicesScreen(): React.JSX.Element {
 
       {!loading && error == null && devices != null && devices.length > 0 ? (
         <View accessibilityLabel="Devices list">
-          {devices.map((d) => (
-            <ListItem
-              key={d.id}
-              title={d.name ?? d.id}
-              subtitle={[d.type, d.room].filter(Boolean).join(' · ') || undefined}
-              accessibilityLabel={`Device ${d.name ?? d.id}`}
-              accessibilityHint="Opens device details"
-              onPress={() => navigation.navigate('DeviceDetail', { device: d })}
-            />
+          {grouped.map(([room, list]) => (
+            <View key={room}>
+              <Text
+                style={styles.roomHeading}
+                accessibilityRole="header"
+                accessibilityLabel={`Room ${room}`}
+              >
+                {room}
+              </Text>
+              {list.map((d) => (
+                <ListItem
+                  key={d.id}
+                  title={d.name ?? d.id}
+                  subtitle={
+                    [
+                      d.type,
+                      d.power != null ? (d.power ? 'On' : 'Off') : null,
+                      d.brightness != null ? `${Math.round((d.brightness ?? 0) * 100)}%` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ') || undefined
+                  }
+                  accessibilityLabel={`Device ${d.name ?? d.id}`}
+                  accessibilityHint="Opens device details"
+                  onPress={() => navigation.navigate('DeviceDetail', { device: d })}
+                />
+              ))}
+            </View>
           ))}
         </View>
       ) : null}
@@ -124,4 +157,14 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, marginBottom: 8 },
   retry: { fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' },
   empty: { paddingHorizontal: 16, fontSize: 14, opacity: 0.8 },
+  roomHeading: {
+    fontSize: 13,
+    fontWeight: '700',
+    opacity: 0.55,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
 });
