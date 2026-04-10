@@ -1,9 +1,12 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ProfileSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
 import { RetryLoadDialog } from '../components/RetryLoadDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import type { ProfilesStackParamList } from '../navigation/paramLists';
 
 function roleLabel(role: ProfileSummary['role']): string {
   if (role == null) {
@@ -12,7 +15,10 @@ function roleLabel(role: ProfileSummary['role']): string {
   return role.charAt(0).toUpperCase() + role.slice(1);
 }
 
+type ProfilesListNav = NativeStackNavigationProp<ProfilesStackParamList, 'ProfilesList'>;
+
 export function ProfilesScreen(): React.JSX.Element {
+  const navigation = useNavigation<ProfilesListNav>();
   const { cubeApi, cubeBaseUrl } = useCubeApiContext();
   const [profiles, setProfiles] = useState<ProfileSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +88,8 @@ export function ProfilesScreen(): React.JSX.Element {
               title={p.display_name ?? p.id}
               subtitle={`Role: ${roleLabel(p.role)}`}
               accessibilityLabel={`Profile ${p.display_name ?? p.id}`}
+              accessibilityHint="Opens profile details"
+              onPress={() => navigation.navigate('ProfileDetail', { profile: p })}
             />
           ))}
         </View>

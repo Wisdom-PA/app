@@ -1,11 +1,17 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { DeviceSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
 import { RetryLoadDialog } from '../components/RetryLoadDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import type { DevicesStackParamList } from '../navigation/paramLists';
+
+type DevicesListNav = NativeStackNavigationProp<DevicesStackParamList, 'DevicesList'>;
 
 export function DevicesScreen(): React.JSX.Element {
+  const navigation = useNavigation<DevicesListNav>();
   const { cubeApi, cubeBaseUrl } = useCubeApiContext();
   const [devices, setDevices] = useState<DeviceSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,6 +81,8 @@ export function DevicesScreen(): React.JSX.Element {
               title={d.name ?? d.id}
               subtitle={[d.type, d.room].filter(Boolean).join(' · ') || undefined}
               accessibilityLabel={`Device ${d.name ?? d.id}`}
+              accessibilityHint="Opens device details"
+              onPress={() => navigation.navigate('DeviceDetail', { device: d })}
             />
           ))}
         </View>

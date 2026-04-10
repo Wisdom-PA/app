@@ -1,14 +1,18 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import type { CubeApi } from '../api/cubeApi';
 import { mockCubeApi } from '../api/mockCubeApi';
 import { CubeApiProvider } from '../context/CubeApiContext';
-import { DevicesScreen } from './DevicesScreen';
+import { DevicesStack } from '../navigation/stacks/DevicesStack';
 
-function withProvider(
-  ui: React.ReactElement,
-  cubeApiOverride?: CubeApi
-): React.JSX.Element {
-  return <CubeApiProvider cubeApiOverride={cubeApiOverride}>{ui}</CubeApiProvider>;
+function withProvider(cubeApiOverride?: CubeApi): React.JSX.Element {
+  return (
+    <CubeApiProvider cubeApiOverride={cubeApiOverride}>
+      <NavigationContainer>
+        <DevicesStack />
+      </NavigationContainer>
+    </CubeApiProvider>
+  );
 }
 
 const loadingApi: CubeApi = {
@@ -30,16 +34,13 @@ const emptyApi: CubeApi = {
 
 export default {
   title: 'Screens/DevicesScreen',
-  component: DevicesScreen,
+  component: DevicesStack,
 };
 
-export const Default = (): React.JSX.Element => withProvider(<DevicesScreen />);
+export const Default = (): React.JSX.Element => withProvider();
 
-export const Loading = (): React.JSX.Element =>
-  withProvider(<DevicesScreen />, loadingApi);
+export const Loading = (): React.JSX.Element => withProvider(loadingApi);
 
-export const ErrorState = (): React.JSX.Element =>
-  withProvider(<DevicesScreen />, errorApi);
+export const ErrorState = (): React.JSX.Element => withProvider(errorApi);
 
-export const EmptyList = (): React.JSX.Element =>
-  withProvider(<DevicesScreen />, emptyApi);
+export const EmptyList = (): React.JSX.Element => withProvider(emptyApi);

@@ -1,17 +1,12 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
-import { CubeApiProvider } from '../../context/CubeApiContext';
-import { DevicesScreen } from '../DevicesScreen';
-
-function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
-  return render(<CubeApiProvider>{ui}</CubeApiProvider>);
-}
+import { DevicesStack } from '../../navigation/stacks/DevicesStack';
+import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('DevicesScreen', () => {
   it('loads devices from mock API and exposes screen label', async () => {
-    renderWithProvider(<DevicesScreen />);
+    render(withStackNavigation(DevicesStack));
     expect(screen.getByLabelText('Devices screen')).toBeTruthy();
     await waitFor(() => {
       expect(screen.getByText('Living room light')).toBeTruthy();
@@ -27,11 +22,7 @@ describe('DevicesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <DevicesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(DevicesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -45,11 +36,7 @@ describe('DevicesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <DevicesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(DevicesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -63,11 +50,7 @@ describe('DevicesScreen', () => {
       ...mockCubeApi,
       getDevices: async () => ({ devices: [] }),
     };
-    render(
-      <CubeApiProvider cubeApiOverride={emptyApi}>
-        <DevicesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(DevicesStack, emptyApi));
     await waitFor(() => {
       expect(screen.getByText(/No devices reported by the cube/)).toBeTruthy();
     });

@@ -1,17 +1,12 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
-import { CubeApiProvider } from '../../context/CubeApiContext';
-import { RoutinesScreen } from '../RoutinesScreen';
-
-function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
-  return render(<CubeApiProvider>{ui}</CubeApiProvider>);
-}
+import { RoutinesStack } from '../../navigation/stacks/RoutinesStack';
+import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('RoutinesScreen', () => {
   it('loads routines from mock API and exposes screen label', async () => {
-    renderWithProvider(<RoutinesScreen />);
+    render(withStackNavigation(RoutinesStack));
     expect(screen.getByLabelText('Routines screen')).toBeTruthy();
     await waitFor(() => {
       expect(screen.getByText('Evening lights')).toBeTruthy();
@@ -27,11 +22,7 @@ describe('RoutinesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <RoutinesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(RoutinesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -45,11 +36,7 @@ describe('RoutinesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <RoutinesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(RoutinesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });

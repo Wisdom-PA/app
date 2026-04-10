@@ -1,17 +1,16 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
-import { CubeApiProvider } from '../../context/CubeApiContext';
-import { LogsScreen } from '../LogsScreen';
-
-function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
-  return render(<CubeApiProvider>{ui}</CubeApiProvider>);
-}
+import { LogsStack } from '../../navigation/stacks/LogsStack';
+import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('LogsScreen', () => {
   it('loads logs from mock API, empty state, and screen label', async () => {
-    renderWithProvider(<LogsScreen />);
+    const emptyLogs: CubeApi = {
+      ...mockCubeApi,
+      getLogs: async () => ({ chains: [] }),
+    };
+    render(withStackNavigation(LogsStack, emptyLogs));
     expect(screen.getByLabelText('Logs screen')).toBeTruthy();
     await waitFor(() => {
       expect(screen.getByLabelText('Logs empty state')).toBeTruthy();
@@ -27,11 +26,7 @@ describe('LogsScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <LogsScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(LogsStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -45,11 +40,7 @@ describe('LogsScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <LogsScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(LogsStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -58,18 +49,16 @@ describe('LogsScreen', () => {
     fireEvent.press(screen.getByLabelText('Cancel'));
   });
 
-  it('shows summary when chains are returned', async () => {
+  it('lists chains when API returns them', async () => {
     const withChains: CubeApi = {
       ...mockCubeApi,
-      getLogs: async () => ({ chains: [{ x: 1 }] }),
+      getLogs: async () => ({ chains: [{ chain_id: 'abc-def-ghi' }, { x: 1 }] }),
     };
-    render(
-      <CubeApiProvider cubeApiOverride={withChains}>
-        <LogsScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(LogsStack, withChains));
     await waitFor(() => {
-      expect(screen.getByText(/1 chain/)).toBeTruthy();
+      expect(screen.getByLabelText('Logs chain list')).toBeTruthy();
     });
+    expect(screen.getByLabelText('Log Chain abc-def-ghi')).toBeTruthy();
+    expect(screen.getByLabelText('Log Chain 2')).toBeTruthy();
   });
 });

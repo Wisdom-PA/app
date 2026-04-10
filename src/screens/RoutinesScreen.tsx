@@ -1,11 +1,17 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { RoutineSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
 import { RetryLoadDialog } from '../components/RetryLoadDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import type { RoutinesStackParamList } from '../navigation/paramLists';
+
+type RoutinesListNav = NativeStackNavigationProp<RoutinesStackParamList, 'RoutinesList'>;
 
 export function RoutinesScreen(): React.JSX.Element {
+  const navigation = useNavigation<RoutinesListNav>();
   const { cubeApi, cubeBaseUrl } = useCubeApiContext();
   const [routines, setRoutines] = useState<RoutineSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,6 +80,8 @@ export function RoutinesScreen(): React.JSX.Element {
               key={r.id}
               title={r.name ?? r.id}
               accessibilityLabel={`Routine ${r.name ?? r.id}`}
+              accessibilityHint="Opens routine details"
+              onPress={() => navigation.navigate('RoutineDetail', { routine: r })}
             />
           ))}
         </View>

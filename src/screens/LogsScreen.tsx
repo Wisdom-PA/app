@@ -1,11 +1,19 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ListItem } from '../components/ListItem';
 import { RetryLoadDialog } from '../components/RetryLoadDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import type { LogsStackParamList } from '../navigation/paramLists';
+import { logChainListTitle } from './logChainTitle';
+
+type LogsListNav = NativeStackNavigationProp<LogsStackParamList, 'LogsList'>;
 
 export function LogsScreen(): React.JSX.Element {
+  const navigation = useNavigation<LogsListNav>();
   const { cubeApi, cubeBaseUrl } = useCubeApiContext();
-  const [chainCount, setChainCount] = useState<number | null>(null);
+  const [chains, setChains] = useState<unknown[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryOpen, setRetryOpen] = useState(false);
@@ -15,11 +23,11 @@ export function LogsScreen(): React.JSX.Element {
     setError(null);
     try {
       const res = await cubeApi.getLogs();
-      setChainCount(Array.isArray(res.chains) ? res.chains.length : 0);
+      setChains(Array.isArray(res.chains) ? res.chains : []);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not load logs.';
       setError(msg);
-      setChainCount(null);
+      setChains(null);
     } finally {
       setLoading(false);
     }
@@ -41,8 +49,8 @@ export function LogsScreen(): React.JSX.Element {
       <Text style={styles.heading}>Logs</Text>
       <Text style={styles.source}>Source: {sourceLabel}</Text>
       <Text style={styles.help}>
-        Behaviour log chains (intents, actions, internet calls) will appear here when the cube
-        exposes them.
+        Open a chain to inspect raw JSON. Richer chain views arrive with the cube log query API
+        (F8.T1.S4).
       </Text>
 
       {loading ? (
@@ -65,14 +73,32 @@ export function LogsScreen(): React.JSX.Element {
         </View>
       ) : null}
 
-      {!loading && error == null && chainCount != null && chainCount === 0 ? (
+      {!loading && error == null && chains != null && chains.length === 0 ? (
         <Text style={styles.empty} accessibilityLabel="Logs empty state">
           No behaviour log chains yet.
         </Text>
       ) : null}
 
-      {!loading && error == null && chainCount != null && chainCount > 0 ? (
-        <Text style={styles.summary}>{chainCount} chain(s) — detailed view coming later.</Text>
+      {!loading && error == null && chains != null && chains.length > 0 ? (
+        <View accessibilityLabel="Logs chain list">
+          {chains.map((c, i) => {
+            const title = logChainListTitle(c, i);
+            return (
+              <ListItem
+                key={`chain-${i}`}
+                title={title}
+                accessibilityLabel={`Log ${title}`}
+                accessibilityHint="Opens chain detail"
+                onPress={() =>
+                  navigation.navigate('LogChainDetail', {
+                    chainJson: JSON.stringify(c),
+                    title,
+                  })
+                }
+              />
+            );
+          })}
+        </View>
       ) : null}
     </ScrollView>
     <RetryLoadDialog
@@ -117,5 +143,4 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 14, marginBottom: 8 },
   retry: { fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' },
   empty: { paddingHorizontal: 16, fontSize: 14, opacity: 0.8 },
-  summary: { paddingHorizontal: 16, fontSize: 14 },
 });

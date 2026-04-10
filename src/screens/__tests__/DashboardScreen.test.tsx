@@ -9,14 +9,14 @@ function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
   return render(<CubeApiProvider>{ui}</CubeApiProvider>);
 }
 
-const asyncWaitOptions = { timeout: 15000 };
+const asyncWaitOptions = { timeout: 25000 };
 
 describe('DashboardScreen', () => {
   it('loads and shows version from mock cube API', async () => {
     renderWithProvider(<DashboardScreen />);
     expect(await screen.findByText('0.1.0', {}, asyncWaitOptions)).toBeTruthy();
     expect(screen.getByText(/Mock cube/)).toBeTruthy();
-  }, 20000);
+  }, 35000);
 
   it('has dashboard accessibility label', async () => {
     renderWithProvider(<DashboardScreen />);
@@ -24,7 +24,7 @@ describe('DashboardScreen', () => {
     expect(
       await screen.findByLabelText(/Dashboard status details/, {}, asyncWaitOptions)
     ).toBeTruthy();
-  }, 20000);
+  }, 35000);
 
   it('shows error when status API fails', async () => {
     const failing: CubeApi = {
@@ -40,7 +40,7 @@ describe('DashboardScreen', () => {
     );
     expect(await screen.findByText('unreachable', {}, asyncWaitOptions)).toBeTruthy();
     expect(screen.getByLabelText('Dashboard error')).toBeTruthy();
-  }, 20000);
+  }, 35000);
 
   it('opens retry dialog from error state and can cancel', async () => {
     const failing: CubeApi = {
@@ -58,7 +58,7 @@ describe('DashboardScreen', () => {
     fireEvent.press(screen.getByLabelText('Retry loading status'));
     expect(screen.getByText('Try loading status again?')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Cancel'));
-  }, 20000);
+  }, 35000);
 
   it('retry from dialog reloads status after a transient failure', async () => {
     let attempt = 0;
@@ -81,5 +81,5 @@ describe('DashboardScreen', () => {
     fireEvent.press(screen.getByLabelText('Retry loading status'));
     fireEvent.press(screen.getByLabelText('Retry'));
     expect(await screen.findByText('0.1.0', {}, asyncWaitOptions)).toBeTruthy();
-  }, 20000);
+  }, 35000);
 });

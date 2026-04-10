@@ -1,14 +1,18 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import type { CubeApi } from '../api/cubeApi';
 import { mockCubeApi } from '../api/mockCubeApi';
 import { CubeApiProvider } from '../context/CubeApiContext';
-import { RoutinesScreen } from './RoutinesScreen';
+import { RoutinesStack } from '../navigation/stacks/RoutinesStack';
 
-function withProvider(
-  ui: React.ReactElement,
-  cubeApiOverride?: CubeApi
-): React.JSX.Element {
-  return <CubeApiProvider cubeApiOverride={cubeApiOverride}>{ui}</CubeApiProvider>;
+function withProvider(cubeApiOverride?: CubeApi): React.JSX.Element {
+  return (
+    <CubeApiProvider cubeApiOverride={cubeApiOverride}>
+      <NavigationContainer>
+        <RoutinesStack />
+      </NavigationContainer>
+    </CubeApiProvider>
+  );
 }
 
 const loadingApi: CubeApi = {
@@ -30,16 +34,13 @@ const emptyApi: CubeApi = {
 
 export default {
   title: 'Screens/RoutinesScreen',
-  component: RoutinesScreen,
+  component: RoutinesStack,
 };
 
-export const Default = (): React.JSX.Element => withProvider(<RoutinesScreen />);
+export const Default = (): React.JSX.Element => withProvider();
 
-export const Loading = (): React.JSX.Element =>
-  withProvider(<RoutinesScreen />, loadingApi);
+export const Loading = (): React.JSX.Element => withProvider(loadingApi);
 
-export const ErrorState = (): React.JSX.Element =>
-  withProvider(<RoutinesScreen />, errorApi);
+export const ErrorState = (): React.JSX.Element => withProvider(errorApi);
 
-export const EmptyList = (): React.JSX.Element =>
-  withProvider(<RoutinesScreen />, emptyApi);
+export const EmptyList = (): React.JSX.Element => withProvider(emptyApi);
