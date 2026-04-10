@@ -42,7 +42,17 @@ const MOCK_PROFILES: ProfileList = {
 };
 
 const MOCK_LOGS: LogQueryResult = {
-  chains: [],
+  chains: [
+    {
+      chain_id: '550e8400-e29b-41d4-a716-446655440000',
+      chain_start_ts: '2026-04-01T12:00:00Z',
+      intents: [{ utterance: 'turn on living room light', intent_index: 0 }],
+    },
+    {
+      chain_id: 'short',
+      note: 'Example chain without full schema',
+    },
+  ],
 };
 
 const MOCK_BACKUP_LINE = 'WISDOM-BACKUP-v0\n';

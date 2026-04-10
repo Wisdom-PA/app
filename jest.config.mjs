@@ -8,6 +8,7 @@ export default {
     'App.tsx',
     '!src/**/*.stories.[jt]s?(x)',
     '!src/**/*.types.ts',
+    '!src/navigation/paramLists.ts',
     '!src/**/index.ts',
     '!**/node_modules/**',
   ],

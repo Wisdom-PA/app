@@ -44,9 +44,12 @@ describe('mockCubeApi', () => {
     expect(list.profiles.length).toBeGreaterThanOrEqual(0);
   });
 
-  it('getLogs returns log result', async () => {
+  it('getLogs returns sample chains for UI drill-down', async () => {
     const result = await mockCubeApi.getLogs();
-    expect(result.chains).toEqual([]);
+    expect(result.chains).toHaveLength(2);
+    expect(result.chains[0]).toMatchObject({
+      chain_id: '550e8400-e29b-41d4-a716-446655440000',
+    });
   });
 
   it('createBackup returns octet-stream-sized buffer matching cube stub', async () => {

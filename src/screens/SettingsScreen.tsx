@@ -10,6 +10,12 @@ import {
 } from 'react-native';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useCubeApiContext } from '../context/CubeApiContext';
+import {
+  clearEncryptedBackup,
+  hasEncryptedBackup,
+  loadEncryptedBackup,
+  saveEncryptedBackup,
+} from '../storage/backupVault';
 
 type Feedback = { title: string; message: string } | null;
 
@@ -18,13 +24,45 @@ export function SettingsScreen(): React.JSX.Element {
   const [draft, setDraft] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
+  const [clearVaultConfirmOpen, setClearVaultConfirmOpen] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
   const [restoreLoading, setRestoreLoading] = useState(false);
+  const [encryptSaving, setEncryptSaving] = useState(false);
+  const [vaultClearing, setVaultClearing] = useState(false);
+  const [storedOnDevice, setStoredOnDevice] = useState(false);
   const [lastBackupPayload, setLastBackupPayload] = useState<ArrayBuffer | null>(null);
 
   useEffect(() => {
     setDraft(cubeBaseUrl ?? '');
   }, [cubeBaseUrl]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const has = await hasEncryptedBackup();
+        if (cancelled) {
+          return;
+        }
+        setStoredOnDevice(has);
+        if (has) {
+          const buf = await loadEncryptedBackup();
+          if (cancelled || buf == null) {
+            return;
+          }
+          setLastBackupPayload(buf.slice(0));
+        }
+      } catch (e) {
+        if (!cancelled) {
+          const msg = e instanceof Error ? e.message : 'Could not read stored backup.';
+          setFeedback({ title: 'Stored backup', message: msg });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const dismissFeedback = (): void => {
     setFeedback(null);
@@ -62,7 +100,7 @@ export function SettingsScreen(): React.JSX.Element {
       setLastBackupPayload(buf.slice(0));
       setFeedback({
         title: 'Backup created',
-        message: `Received ${buf.byteLength} bytes. Use “Restore last backup” to send this payload back to the cube in this session.`,
+        message: `Received ${buf.byteLength} bytes. Use “Restore last backup” to send it to the cube, or “Save encrypted on device” to keep a copy on this phone.`,
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Backup failed.';
@@ -88,6 +126,44 @@ export function SettingsScreen(): React.JSX.Element {
       setFeedback({ title: 'Restore failed', message: msg });
     } finally {
       setRestoreLoading(false);
+    }
+  };
+
+  const onSaveEncryptedOnDevice = async (): Promise<void> => {
+    if (lastBackupPayload == null) {
+      return;
+    }
+    setEncryptSaving(true);
+    try {
+      await saveEncryptedBackup(lastBackupPayload);
+      setStoredOnDevice(true);
+      setFeedback({
+        title: 'Saved on device',
+        message:
+          'Backup is encrypted with a key in the device keystore and stored locally. You can restore to the cube from this screen anytime.',
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Could not save backup on device.';
+      setFeedback({ title: 'Save failed', message: msg });
+    } finally {
+      setEncryptSaving(false);
+    }
+  };
+
+  const onClearStoredBackup = async (): Promise<void> => {
+    setVaultClearing(true);
+    try {
+      await clearEncryptedBackup();
+      setStoredOnDevice(false);
+      setFeedback({
+        title: 'Cleared',
+        message: 'Encrypted backup removed from this device. Session restore buffer is unchanged.',
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Could not clear stored backup.';
+      setFeedback({ title: 'Clear failed', message: msg });
+    } finally {
+      setVaultClearing(false);
     }
   };
 
@@ -148,20 +224,24 @@ export function SettingsScreen(): React.JSX.Element {
 
         <Text style={[styles.heading, styles.sectionHeading]}>Backup & restore</Text>
         <Text style={styles.help}>
-          Create a backup from the cube (POST /backup). Restore sends the last backup payload in this
-          session to the cube (POST /restore). On a real device, prefer exporting the file from a
-          future release; this flow is enough for development and automated tests.
+          Create a backup from the cube (POST /backup). Restore sends the in-memory payload to the
+          cube (POST /restore). Optionally save the same payload encrypted on this phone (F9.T9.S2):
+          key in the OS secure store, ciphertext in app storage.
+        </Text>
+
+        <Text style={styles.status}>
+          Encrypted copy on device: {storedOnDevice ? 'yes' : 'no'}
         </Text>
 
         <View style={styles.row}>
           <Pressable
             style={({ pressed }) => [
               styles.button,
-              (backupLoading || restoreLoading) && styles.buttonDisabled,
+              (backupLoading || restoreLoading || encryptSaving || vaultClearing) && styles.buttonDisabled,
               pressed && styles.buttonPressed,
             ]}
             onPress={() => void onCreateBackup()}
-            disabled={backupLoading || restoreLoading}
+            disabled={backupLoading || restoreLoading || encryptSaving || vaultClearing}
             accessibilityLabel="Create backup from cube"
             accessibilityRole="button"
           >
@@ -174,11 +254,12 @@ export function SettingsScreen(): React.JSX.Element {
           <Pressable
             style={({ pressed }) => [
               styles.buttonSecondary,
-              (restoreLoading || lastBackupPayload == null || backupLoading) && styles.buttonDisabled,
+              (restoreLoading || lastBackupPayload == null || backupLoading || encryptSaving || vaultClearing) &&
+                styles.buttonDisabled,
               pressed && styles.buttonPressed,
             ]}
             onPress={() => setRestoreConfirmOpen(true)}
-            disabled={restoreLoading || lastBackupPayload == null || backupLoading}
+            disabled={restoreLoading || lastBackupPayload == null || backupLoading || encryptSaving || vaultClearing}
             accessibilityLabel="Restore last backup to cube"
             accessibilityRole="button"
           >
@@ -186,6 +267,44 @@ export function SettingsScreen(): React.JSX.Element {
               <ActivityIndicator color="#2563eb" accessibilityLabel="Restoring backup" />
             ) : (
               <Text style={styles.buttonSecondaryText}>Restore last backup</Text>
+            )}
+          </Pressable>
+        </View>
+
+        <View style={styles.row}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.buttonSecondary,
+              (lastBackupPayload == null || backupLoading || encryptSaving || vaultClearing) &&
+                styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => void onSaveEncryptedOnDevice()}
+            disabled={lastBackupPayload == null || backupLoading || encryptSaving || vaultClearing}
+            accessibilityLabel="Save backup encrypted on device"
+            accessibilityRole="button"
+          >
+            {encryptSaving ? (
+              <ActivityIndicator color="#2563eb" accessibilityLabel="Saving backup" />
+            ) : (
+              <Text style={styles.buttonSecondaryText}>Save encrypted on device</Text>
+            )}
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.buttonSecondary,
+              (!storedOnDevice || encryptSaving || vaultClearing) && styles.buttonDisabled,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => setClearVaultConfirmOpen(true)}
+            disabled={!storedOnDevice || encryptSaving || vaultClearing}
+            accessibilityLabel="Clear encrypted backup from device"
+            accessibilityRole="button"
+          >
+            {vaultClearing ? (
+              <ActivityIndicator color="#2563eb" accessibilityLabel="Clearing backup" />
+            ) : (
+              <Text style={styles.buttonSecondaryText}>Clear device backup</Text>
             )}
           </Pressable>
         </View>
@@ -212,6 +331,20 @@ export function SettingsScreen(): React.JSX.Element {
           void runRestore();
         }}
         onDismiss={() => setRestoreConfirmOpen(false)}
+      />
+
+      <ConfirmDialog
+        visible={clearVaultConfirmOpen}
+        title="Clear device backup?"
+        message="Removes the encrypted backup from this phone. Your current in-memory restore buffer is not cleared."
+        secondaryLabel="Cancel"
+        onSecondary={() => setClearVaultConfirmOpen(false)}
+        primaryLabel="Clear"
+        onPrimary={() => {
+          setClearVaultConfirmOpen(false);
+          void onClearStoredBackup();
+        }}
+        onDismiss={() => setClearVaultConfirmOpen(false)}
       />
     </>
   );

@@ -6,14 +6,14 @@ Conventions:
 - Features group related tasks; tasks are independently shippable chunks; subtasks are the smallest units of work.
 - **✓** on a subtask = design/spec captured (often in Plan or inline notes). **Code status** for this workspace is summarized below and in *Progress* notes where work has started.
 
-### Current progress (snapshot: 2026-04-02)
+### Current progress (snapshot: 2026-04-10)
 
 | Area | Status | What exists / what is next |
 | ---- | ------ | -------------------------- |
 | **Repos & CI** (GettingStarted Phase 0–3) | **Done** | `cube`, `app`, `contracts`, `backend`, `scripts`, `listener` on disk; GitHub Actions **Lint/Test** (and scripts checks) per repo. |
 | **Contracts** (cube ↔ app) | **In progress** | OpenAPI `contracts/openapi/cube-app.yaml` **v0.1**: `status`, `config`, `devices`, `routines`, `profiles`, `logs`, `backup`, `restore` (+ schemas). Extend as features land; regenerate app types when needed. |
 | **Cube (Java)** | **In progress** | Maven project, tests, Checkstyle. **Core:** `ApiGateway`, `SttService`, `TtsService`, `LlmService`, `AutomationEngine` (with `Intent` / `ActionResult` records). **Logging:** `BehaviourLogSchema` records + `BehaviourLogWriter` interface (Plan §4). **Gateway:** `HttpServerGateway` implements contract **GET** routes with stub JSON; **PATCH /config** (in-memory); **POST /backup** (empty body), **POST /restore** (no body); wrong methods **405**; unknown paths **404**. Run with `java -cp … wisdom.cube.Cube --port 8080` or **`CUBE_PORT`**. |
-| **App (React Native)** | **In progress** | Bottom tabs + stacks, **`CubeApiProvider`**. Load errors: **`RetryLoadDialog`** (wraps **`ConfirmDialog`**) on Dashboard, Devices, Routines, Profiles, Logs. **Settings**: LAN URL / mock, **backup** (**`createBackup`**) and **restore** (**`restoreBackup`**) with confirmations (in-session payload). Storybook: list screens, **ConfirmDialog**, **RetryLoadDialog**. **No** Bluetooth/Wi‑Fi pairing yet. |
+| **App (React Native)** | **In progress** | Bottom tabs + stacks, **`CubeApiProvider`**. Load errors: **`RetryLoadDialog`** on list screens. **Settings**: LAN URL / mock, backup/restore, **encrypted on-device backup** (**`backupVault`**: SecureStore key + NaCl secretbox + AsyncStorage). **List → detail**: Devices, Routines, Profiles, Logs (chain JSON view). Mock logs include sample chains. Storybook updated for stacks + detail screens. **No** Bluetooth/Wi‑Fi pairing yet. |
 | **Backend (optional)** | **Scaffold only** | Java `pom.xml`; no remote backup API implementation yet. |
 | **F1–F7, F10–F11 (most tasks)** | **Not started** or **spec only** | Many subtasks have ✓ spec in this file or Plan; no firmware, voice pipeline, smart home, or production profiles in code yet. |
 
@@ -364,7 +364,7 @@ Conventions:
       - **Navigation**: Bottom tab bar with per‑tab stacks (each section has its own stack for list → detail).
       - **Cube (on‑device speaker)**: Java only; strict OOP, repeatable code.
       - **Backend**: Java for any cloud/sync or remote services.
-    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *read-only lists / status wired to contract v0.1; no device control or log drill-down yet*
+    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *read-only lists / status wired to contract v0.1; list→detail for devices, routines, profiles; logs show chains + raw JSON detail (no device control yet)*
     - **F9.T1.S3 – Implement shared UI components (lists, toggles, dialogs)** — *`ConfirmDialog`, `RetryLoadDialog`, Storybook/tests; **Settings** notices; two-button retry on Dashboard, Devices, Routines, Profiles, Logs*
 
 - **F9.T2 – Bluetooth pairing and secure channel**
@@ -428,7 +428,7 @@ Conventions:
   - *Progress (2026-04): **S1** — **Settings** triggers **`createBackup`**; payload held in app session for the same run. **S3** — **restore last backup** via **`restoreBackup`** with **`ConfirmDialog`**. **S2** (encrypted at-rest storage on device) and **S4** (remote opt-in UI) not started.*
   - **Subtasks:**
     - **F9.T9.S1 – Implement UI to trigger backup from cube to mobile** — *app: Settings → create backup (session-held payload)*
-    - **F9.T9.S2 – Implement secure encrypted storage of backups on mobile**
+    - **F9.T9.S2 – Implement secure encrypted storage of backups on mobile** — *app: keystore key + secretbox ciphertext in AsyncStorage; Settings save/clear + hydrate restore buffer on launch*
     - **F9.T9.S3 – Implement restore‑from‑backup flow to cube** — *app: restore last in-session backup to cube*
     - **F9.T9.S4 – Implement optional remote backup opt‑in/opt‑out UI**
 

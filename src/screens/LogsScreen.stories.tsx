@@ -1,14 +1,18 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import type { CubeApi } from '../api/cubeApi';
 import { mockCubeApi } from '../api/mockCubeApi';
 import { CubeApiProvider } from '../context/CubeApiContext';
-import { LogsScreen } from './LogsScreen';
+import { LogsStack } from '../navigation/stacks/LogsStack';
 
-function withProvider(
-  ui: React.ReactElement,
-  cubeApiOverride?: CubeApi
-): React.JSX.Element {
-  return <CubeApiProvider cubeApiOverride={cubeApiOverride}>{ui}</CubeApiProvider>;
+function withProvider(cubeApiOverride?: CubeApi): React.JSX.Element {
+  return (
+    <CubeApiProvider cubeApiOverride={cubeApiOverride}>
+      <NavigationContainer>
+        <LogsStack />
+      </NavigationContainer>
+    </CubeApiProvider>
+  );
 }
 
 const loadingApi: CubeApi = {
@@ -23,6 +27,11 @@ const errorApi: CubeApi = {
   },
 };
 
+const emptyLogsApi: CubeApi = {
+  ...mockCubeApi,
+  getLogs: async () => ({ chains: [] }),
+};
+
 const withChainsApi: CubeApi = {
   ...mockCubeApi,
   getLogs: async () => ({ chains: [{ chain_id: 'a' }] }),
@@ -30,14 +39,13 @@ const withChainsApi: CubeApi = {
 
 export default {
   title: 'Screens/LogsScreen',
-  component: LogsScreen,
+  component: LogsStack,
 };
 
-export const Default = (): React.JSX.Element => withProvider(<LogsScreen />);
+export const Default = (): React.JSX.Element => withProvider(emptyLogsApi);
 
-export const Loading = (): React.JSX.Element => withProvider(<LogsScreen />, loadingApi);
+export const Loading = (): React.JSX.Element => withProvider(loadingApi);
 
-export const ErrorState = (): React.JSX.Element => withProvider(<LogsScreen />, errorApi);
+export const ErrorState = (): React.JSX.Element => withProvider(errorApi);
 
-export const WithChains = (): React.JSX.Element =>
-  withProvider(<LogsScreen />, withChainsApi);
+export const WithChains = (): React.JSX.Element => withProvider(withChainsApi);

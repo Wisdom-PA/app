@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { CubeApiProvider } from '../../../context/CubeApiContext';
 import { DevicesStack } from '../DevicesStack';
@@ -23,6 +23,18 @@ describe('DevicesStack', () => {
       expect(screen.getByText('Living room light')).toBeTruthy();
     });
   });
+
+  it('navigates to device detail when a row is pressed', async () => {
+    render(wrap(<DevicesStack />));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Device Living room light')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Device Living room light'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Device detail')).toBeTruthy();
+    });
+    expect(screen.getByText('light-1')).toBeTruthy();
+  });
 });
 
 describe('RoutinesStack', () => {
@@ -31,6 +43,18 @@ describe('RoutinesStack', () => {
     await waitFor(() => {
       expect(screen.getByText('Evening lights')).toBeTruthy();
     });
+  });
+
+  it('navigates to routine detail when a row is pressed', async () => {
+    render(wrap(<RoutinesStack />));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Routine Evening lights')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Routine Evening lights'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Routine detail')).toBeTruthy();
+    });
+    expect(screen.getByText('r1')).toBeTruthy();
   });
 });
 
@@ -45,6 +69,18 @@ describe('ProfilesStack', () => {
     },
     20000
   );
+
+  it('navigates to profile detail when a row is pressed', async () => {
+    render(wrap(<ProfilesStack />));
+    expect(
+      await screen.findByLabelText('Profile Adult', {}, { timeout: 15000 })
+    ).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Profile Adult'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Profile detail')).toBeTruthy();
+    });
+    expect(screen.getByText('p1')).toBeTruthy();
+  }, 20000);
 });
 
 describe('SettingsStack', () => {
@@ -55,10 +91,23 @@ describe('SettingsStack', () => {
 });
 
 describe('LogsStack', () => {
-  it('renders Logs screen content', async () => {
+  it('renders Logs screen with mock chains', async () => {
     render(wrap(<LogsStack />));
     await waitFor(() => {
-      expect(screen.getByText(/No behaviour log chains yet/)).toBeTruthy();
+      expect(screen.getByLabelText('Logs chain list')).toBeTruthy();
     });
+    expect(screen.getByLabelText('Log Chain 550e8400…')).toBeTruthy();
+  });
+
+  it('opens log chain detail when a chain is pressed', async () => {
+    render(wrap(<LogsStack />));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Log Chain short')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Log Chain short'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Log chain detail')).toBeTruthy();
+    });
+    expect(screen.getByText(/Example chain/)).toBeTruthy();
   });
 });

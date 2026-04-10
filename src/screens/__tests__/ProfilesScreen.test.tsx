@@ -1,19 +1,14 @@
-import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
 import { mockCubeApi } from '../../api/mockCubeApi';
-import { CubeApiProvider } from '../../context/CubeApiContext';
-import { ProfilesScreen } from '../ProfilesScreen';
-
-function renderWithProvider(ui: React.ReactElement): ReturnType<typeof render> {
-  return render(<CubeApiProvider>{ui}</CubeApiProvider>);
-}
+import { ProfilesStack } from '../../navigation/stacks/ProfilesStack';
+import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('ProfilesScreen', () => {
   it(
     'loads profiles from mock API and exposes screen label',
     async () => {
-      renderWithProvider(<ProfilesScreen />);
+      render(withStackNavigation(ProfilesStack));
       expect(screen.getByLabelText('Profiles screen')).toBeTruthy();
       // Wait on unique copy (not accessibility): labels can differ across RN/test environments.
       expect(
@@ -32,11 +27,7 @@ describe('ProfilesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <ProfilesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(ProfilesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -50,11 +41,7 @@ describe('ProfilesScreen', () => {
         throw new Error('Cube unavailable');
       },
     };
-    render(
-      <CubeApiProvider cubeApiOverride={failing}>
-        <ProfilesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(ProfilesStack, failing));
     await waitFor(() => {
       expect(screen.getByText('Cube unavailable')).toBeTruthy();
     });
@@ -70,11 +57,7 @@ describe('ProfilesScreen', () => {
         profiles: [{ id: 'p1', display_name: 'Name only' }],
       }),
     };
-    render(
-      <CubeApiProvider cubeApiOverride={api}>
-        <ProfilesScreen />
-      </CubeApiProvider>
-    );
+    render(withStackNavigation(ProfilesStack, api));
     await waitFor(() => {
       expect(screen.getByText('Role: —')).toBeTruthy();
     });
