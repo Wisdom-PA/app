@@ -19,3 +19,15 @@ export type LogsStackParamList = {
   LogsList: undefined;
   LogChainDetail: { chainJson: string; title: string };
 };
+
+export type SettingsStackParamList = {
+  SettingsList: undefined;
+  CubeSettings: undefined;
+  PairingPlaceholder: undefined;
+  WiFiPlaceholder: undefined;
+  InternetActivity: undefined;
+};
+
+export type ChatStackParamList = {
+  ChatMain: undefined;
+};

@@ -12,6 +12,8 @@ describe('DevicesScreen', () => {
       expect(screen.getByText('Living room light')).toBeTruthy();
     });
     expect(screen.getByText('Kitchen light')).toBeTruthy();
+    expect(screen.getByLabelText('Room Living room')).toBeTruthy();
+    expect(screen.getByLabelText('Room Kitchen')).toBeTruthy();
     expect(screen.getByText(/Mock cube/)).toBeTruthy();
   });
 

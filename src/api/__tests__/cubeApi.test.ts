@@ -176,4 +176,65 @@ describe('createHttpCubeApi', () => {
     const api = createHttpCubeApi('http://h');
     await expect(api.restoreBackup(new ArrayBuffer(0))).rejects.toThrow('400');
   });
+
+  it('patchDevice sends PATCH to /devices/{id}', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'light-1', power: false }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const d = await api.patchDevice('light-1', { power: false });
+    expect(d.id).toBe('light-1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://h/devices/light-1',
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ power: false }),
+      }),
+    );
+  });
+
+  it('patchDevice encodes device id in path', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'a/b' }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.patchDevice('a/b', {});
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://h/devices/a%2Fb',
+      expect.any(Object),
+    );
+  });
+
+  it('sendChat posts message JSON', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ reply: 'ok', source: 'on_device' }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const r = await api.sendChat('hi');
+    expect(r.reply).toBe('ok');
+    expect(global.fetch).toHaveBeenCalledWith('http://h/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'hi' }),
+    });
+  });
+
+  it('getInternetActivity requests /internet-activity', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ events: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const r = await api.getInternetActivity();
+    expect(r.events).toEqual([]);
+    expect(global.fetch).toHaveBeenCalledWith('http://h/internet-activity');
+  });
 });

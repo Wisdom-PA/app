@@ -1,17 +1,17 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import { CubeApiProvider } from '../context/CubeApiContext';
-import { SettingsScreen } from './SettingsScreen';
+import { SettingsStack } from '../navigation/stacks/SettingsStack';
 
 export default {
   title: 'Screens/SettingsScreen',
-  component: SettingsScreen,
-  decorators: [
-    (Story: React.ComponentType<object>): React.JSX.Element => (
-      <CubeApiProvider>
-        <Story />
-      </CubeApiProvider>
-    ),
-  ],
+  component: SettingsStack,
 };
 
-export const Default = {};
+export const Default = (): React.JSX.Element => (
+  <CubeApiProvider>
+    <NavigationContainer>
+      <SettingsStack />
+    </NavigationContainer>
+  </CubeApiProvider>
+);

@@ -22,6 +22,7 @@ describe('RootNavigator', () => {
     expect(screen.getByText('Devices')).toBeTruthy();
     expect(screen.getByText('Routines')).toBeTruthy();
     expect(screen.getByText('Profiles')).toBeTruthy();
+    expect(screen.getByText('Chat')).toBeTruthy();
     expect(screen.getByText('Settings')).toBeTruthy();
     expect(screen.getByText('Logs')).toBeTruthy();
 

@@ -6,12 +6,14 @@ import { RoutinesStack } from './stacks/RoutinesStack';
 import { ProfilesStack } from './stacks/ProfilesStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { LogsStack } from './stacks/LogsStack';
+import { ChatStack } from './stacks/ChatStack';
 
 export type RootTabParamList = {
   Dashboard: undefined;
   Devices: undefined;
   Routines: undefined;
   Profiles: undefined;
+  Chat: undefined;
   Settings: undefined;
   Logs: undefined;
 };
@@ -30,6 +32,7 @@ export function RootNavigator(): React.JSX.Element {
       <Tab.Screen name="Devices" component={DevicesStack} options={{ title: 'Devices' }} />
       <Tab.Screen name="Routines" component={RoutinesStack} options={{ title: 'Routines' }} />
       <Tab.Screen name="Profiles" component={ProfilesStack} options={{ title: 'Profiles' }} />
+      <Tab.Screen name="Chat" component={ChatStack} options={{ title: 'Chat' }} />
       <Tab.Screen name="Settings" component={SettingsStack} options={{ title: 'Settings' }} />
       <Tab.Screen name="Logs" component={LogsStack} options={{ title: 'Logs' }} />
     </Tab.Navigator>
