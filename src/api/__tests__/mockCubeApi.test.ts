@@ -1,4 +1,5 @@
-import { mockCubeApi, resetMockCubeApiState } from '../mockCubeApi';
+import type { CubeApi } from '../cubeApi';
+import { mockCubeApi, resetMockCubeApiState, setMockDeviceReachable } from '../mockCubeApi';
 
 describe('mockCubeApi', () => {
   beforeEach(() => {
@@ -56,11 +57,41 @@ describe('mockCubeApi', () => {
     await expect(mockCubeApi.patchDevice('nope', { power: true })).rejects.toThrow(/DEVICE_NOT_FOUND/);
   });
 
+  it('patchDevice throws when device unreachable', async () => {
+    const api: CubeApi = {
+      ...mockCubeApi,
+      getDevices: async () => {
+        const base = await mockCubeApi.getDevices();
+        return {
+          devices: base.devices.map((d) =>
+            d.id === 'light-1' ? { ...d, reachable: false } : { ...d },
+          ),
+        };
+      },
+      patchDevice: async (deviceId, patch) => {
+        const list = await api.getDevices();
+        const d = list.devices.find((x) => x.id === deviceId);
+        if (d != null && d.reachable === false) {
+          throw new Error('Cube API 503: DEVICE_UNREACHABLE: Device is not reachable');
+        }
+        return mockCubeApi.patchDevice(deviceId, patch);
+      },
+    };
+    await expect(api.patchDevice('light-1', { power: false })).rejects.toThrow(/DEVICE_UNREACHABLE/);
+  });
+
   it('discoverDevices returns complete status and device list', async () => {
     const r = await mockCubeApi.discoverDevices();
     expect(r.status).toBe('complete');
     expect(r.added).toBe(0);
     expect(r.devices).toHaveLength(2);
+  });
+
+  it('discoverDevices sets unreachable devices back to reachable', async () => {
+    setMockDeviceReachable('light-2', false);
+    expect((await mockCubeApi.getDevices()).devices.find((d) => d.id === 'light-2')?.reachable).toBe(false);
+    await mockCubeApi.discoverDevices();
+    expect((await mockCubeApi.getDevices()).devices.find((d) => d.id === 'light-2')?.reachable).toBe(true);
   });
 
   it('sendChat returns stub reply', async () => {

@@ -164,6 +164,7 @@ export function DevicesScreen(): React.JSX.Element {
                       d.type,
                       d.power != null ? (d.power ? 'On' : 'Off') : null,
                       d.brightness != null ? `${Math.round((d.brightness ?? 0) * 100)}%` : null,
+                      d.reachable === false ? 'Offline' : null,
                     ]
                       .filter(Boolean)
                       .join(' · ') || undefined

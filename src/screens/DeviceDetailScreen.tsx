@@ -70,6 +70,7 @@ export function DeviceDetailScreen({ route }: Props): React.JSX.Element {
   };
 
   const showControls = isLight(device);
+  const isUnreachable = device.reachable === false;
 
   return (
     <ScrollView
@@ -96,6 +97,11 @@ export function DeviceDetailScreen({ route }: Props): React.JSX.Element {
           <Text style={styles.value}>{device.room}</Text>
         </View>
       ) : null}
+      {isUnreachable ? (
+        <Text style={styles.offlineBanner} accessibilityLabel="Device offline notice">
+          This device is offline. Controls are disabled until the cube reports it reachable again.
+        </Text>
+      ) : null}
 
       {showControls ? (
         <View style={styles.controls} accessibilityLabel="Device controls">
@@ -104,7 +110,7 @@ export function DeviceDetailScreen({ route }: Props): React.JSX.Element {
             <Switch
               value={device.power ?? false}
               onValueChange={onTogglePower}
-              disabled={patching}
+              disabled={patching || isUnreachable}
               accessibilityLabel="Device power"
             />
           </View>
@@ -117,7 +123,7 @@ export function DeviceDetailScreen({ route }: Props): React.JSX.Element {
             <Pressable
               style={({ pressed }) => [styles.dimBtn, pressed && styles.dimBtnPressed]}
               onPress={() => adjustBrightness(-0.05)}
-              disabled={patching}
+              disabled={patching || isUnreachable}
               accessibilityLabel="Dimmer"
               accessibilityRole="button"
             >
@@ -126,7 +132,7 @@ export function DeviceDetailScreen({ route }: Props): React.JSX.Element {
             <Pressable
               style={({ pressed }) => [styles.dimBtn, pressed && styles.dimBtnPressed]}
               onPress={() => adjustBrightness(0.05)}
-              disabled={patching}
+              disabled={patching || isUnreachable}
               accessibilityLabel="Brighter"
               accessibilityRole="button"
             >
@@ -153,6 +159,14 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, opacity: 0.65, marginBottom: 4 },
   labelInline: { fontSize: 16, fontWeight: '500' },
   value: { fontSize: 16 },
+  offlineBanner: {
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(180, 83, 9, 0.12)',
+    fontSize: 14,
+    color: '#92400e',
+  },
   controls: { marginTop: 20, paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#ccc' },
   switchRow: {
     flexDirection: 'row',

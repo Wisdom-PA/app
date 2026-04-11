@@ -35,6 +35,7 @@ function initialDevices(): DeviceSummary[] {
       room: 'Living room',
       power: true,
       brightness: 1,
+      reachable: true,
     },
     {
       id: 'light-2',
@@ -43,6 +44,7 @@ function initialDevices(): DeviceSummary[] {
       room: 'Kitchen',
       power: false,
       brightness: 1,
+      reachable: true,
     },
   ];
 }
@@ -98,6 +100,14 @@ export function resetMockCubeApiState(): void {
   mutableDevices = initialDevices();
 }
 
+/** Test hook: simulate an offline device before discovery (F6.T3). */
+export function setMockDeviceReachable(deviceId: string, reachable: boolean): void {
+  const i = mutableDevices.findIndex((d) => d.id === deviceId);
+  if (i >= 0) {
+    mutableDevices[i] = { ...mutableDevices[i], reachable };
+  }
+}
+
 function applyDevicePatch(device: DeviceSummary, patch: DeviceStatePatch): DeviceSummary {
   const next = { ...device };
   if (patch.power !== undefined) {
@@ -135,16 +145,21 @@ export const mockCubeApi: CubeApi = {
   },
   getDevices: async (): Promise<DeviceList> =>
     Promise.resolve({ devices: mutableDevices.map((d) => ({ ...d })) }),
-  discoverDevices: async (): Promise<DeviceDiscoverResponse> =>
-    Promise.resolve({
+  discoverDevices: async (): Promise<DeviceDiscoverResponse> => {
+    mutableDevices = mutableDevices.map((d) => ({ ...d, reachable: true }));
+    return {
       status: 'complete',
       added: 0,
       devices: mutableDevices.map((d) => ({ ...d })),
-    }),
+    };
+  },
   patchDevice: async (deviceId: string, patch: DeviceStatePatch): Promise<DeviceSummary> => {
     const i = mutableDevices.findIndex((d) => d.id === deviceId);
     if (i < 0) {
       throw new Error('Cube API 404: DEVICE_NOT_FOUND: Unknown device id');
+    }
+    if (mutableDevices[i].reachable === false) {
+      throw new Error('Cube API 503: DEVICE_UNREACHABLE: Device is not reachable');
     }
     const updated = applyDevicePatch(mutableDevices[i], patch);
     mutableDevices[i] = updated;

@@ -39,6 +39,34 @@ describe('DeviceDetailScreen', () => {
     expect(screen.queryByLabelText('Device controls')).toBeNull();
   });
 
+  it('disables controls when device is unreachable', async () => {
+    const api: CubeApi = {
+      ...mockCubeApi,
+      getDevices: async () => ({
+        devices: [
+          {
+            id: 'light-1',
+            name: 'Living room light',
+            type: 'light',
+            room: 'Living room',
+            power: true,
+            brightness: 1,
+            reachable: false,
+          },
+        ],
+      }),
+    };
+    render(withStackNavigation(DevicesStack, api));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Device Living room light')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Device Living room light'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Device offline notice')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Device power').props.disabled).toBe(true);
+  });
+
   it('shows generic error when patch fails with non-Error', async () => {
     const api: CubeApi = {
       ...mockCubeApi,
