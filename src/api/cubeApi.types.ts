@@ -30,6 +30,8 @@ export interface DeviceSummary {
   power?: boolean;
   /** Normalized 0.0–1.0 when dimmable. */
   brightness?: number;
+  /** When false, the cube should reject control changes until discovery/health recovers (F6.T3). */
+  reachable?: boolean;
 }
 
 export interface DeviceStatePatch {

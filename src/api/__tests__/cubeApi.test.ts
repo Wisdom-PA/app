@@ -189,6 +189,21 @@ describe('createHttpCubeApi', () => {
     expect(global.fetch).toHaveBeenCalledWith('http://h/devices/discover', { method: 'POST' });
   });
 
+  it('patchDevice maps structured 503 unreachable body', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      statusText: 'Service Unavailable',
+      text: async () =>
+        JSON.stringify({
+          error: { code: 'DEVICE_UNREACHABLE', message: 'Device is not reachable' },
+        }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await expect(api.patchDevice('light-1', {})).rejects.toThrow(/DEVICE_UNREACHABLE/);
+  });
+
   it('patchDevice maps structured 404 error body', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
