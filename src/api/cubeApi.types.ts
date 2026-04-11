@@ -58,6 +58,22 @@ export interface DeviceList {
   devices: DeviceSummary[];
 }
 
+/** Structured error body from cube (e.g. PATCH unknown device). */
+export interface ApiError {
+  code: string;
+  message: string;
+}
+
+export interface DeviceErrorResponse {
+  error: ApiError;
+}
+
+export interface DeviceDiscoverResponse {
+  status: 'complete';
+  added: number;
+  devices: DeviceSummary[];
+}
+
 export interface RoutineSummary {
   id: string;
   name?: string;

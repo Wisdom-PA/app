@@ -53,7 +53,14 @@ describe('mockCubeApi', () => {
   });
 
   it('patchDevice throws for unknown id', async () => {
-    await expect(mockCubeApi.patchDevice('nope', { power: true })).rejects.toThrow('404');
+    await expect(mockCubeApi.patchDevice('nope', { power: true })).rejects.toThrow(/DEVICE_NOT_FOUND/);
+  });
+
+  it('discoverDevices returns complete status and device list', async () => {
+    const r = await mockCubeApi.discoverDevices();
+    expect(r.status).toBe('complete');
+    expect(r.added).toBe(0);
+    expect(r.devices).toHaveLength(2);
   });
 
   it('sendChat returns stub reply', async () => {

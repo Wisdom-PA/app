@@ -5,6 +5,7 @@ import type {
   DeviceList,
   DeviceSummary,
   DeviceStatePatch,
+  DeviceDiscoverResponse,
   RoutineList,
   ProfileList,
   LogQueryResult,
@@ -20,6 +21,7 @@ export interface CubeApi {
   getConfig(): Promise<DeviceConfig>;
   patchConfig(patch: DeviceConfigPatch): Promise<DeviceConfig>;
   getDevices(): Promise<DeviceList>;
+  discoverDevices(): Promise<DeviceDiscoverResponse>;
   patchDevice(deviceId: string, patch: DeviceStatePatch): Promise<DeviceSummary>;
   getRoutines(): Promise<RoutineList>;
   getProfiles(): Promise<ProfileList>;
@@ -35,10 +37,26 @@ function joinUrl(baseUrl: string, path: string): string {
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+function formatCubeErrorBody(text: string, statusText: string): string {
+  const raw = text || statusText;
+  try {
+    const parsed = JSON.parse(text) as { error?: { code?: string; message?: string } };
+    const err = parsed?.error;
+    if (err?.code) {
+      return `${err.code}: ${err.message ?? ''}`.trim();
+    }
+  } catch {
+    // use raw text
+  }
+  return raw;
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Cube API ${response.status}: ${text || response.statusText}`);
+    throw new Error(
+      `Cube API ${response.status}: ${formatCubeErrorBody(text, response.statusText)}`,
+    );
   }
   return response.json() as Promise<T>;
 }
@@ -67,6 +85,10 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
     async getDevices() {
       const r = await fetch(joinUrl(baseUrl, '/devices'));
       return readJson<DeviceList>(r);
+    },
+    async discoverDevices() {
+      const r = await fetch(joinUrl(baseUrl, '/devices/discover'), { method: 'POST' });
+      return readJson<DeviceDiscoverResponse>(r);
     },
     async patchDevice(deviceId, patch) {
       const path = `/devices/${encodeURIComponent(deviceId)}`;
