@@ -177,6 +177,33 @@ describe('createHttpCubeApi', () => {
     await expect(api.restoreBackup(new ArrayBuffer(0))).rejects.toThrow('400');
   });
 
+  it('discoverDevices posts to /devices/discover', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: 'complete', added: 0, devices: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const r = await api.discoverDevices();
+    expect(r.status).toBe('complete');
+    expect(global.fetch).toHaveBeenCalledWith('http://h/devices/discover', { method: 'POST' });
+  });
+
+  it('patchDevice maps structured 404 error body', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: async () =>
+        JSON.stringify({
+          error: { code: 'DEVICE_NOT_FOUND', message: 'Unknown device id' },
+        }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await expect(api.patchDevice('x', {})).rejects.toThrow(/DEVICE_NOT_FOUND/);
+  });
+
   it('patchDevice sends PATCH to /devices/{id}', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

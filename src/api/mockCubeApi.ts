@@ -5,6 +5,7 @@ import type {
   DeviceList,
   DeviceSummary,
   DeviceStatePatch,
+  DeviceDiscoverResponse,
   RoutineList,
   ProfileList,
   LogQueryResult,
@@ -134,10 +135,16 @@ export const mockCubeApi: CubeApi = {
   },
   getDevices: async (): Promise<DeviceList> =>
     Promise.resolve({ devices: mutableDevices.map((d) => ({ ...d })) }),
+  discoverDevices: async (): Promise<DeviceDiscoverResponse> =>
+    Promise.resolve({
+      status: 'complete',
+      added: 0,
+      devices: mutableDevices.map((d) => ({ ...d })),
+    }),
   patchDevice: async (deviceId: string, patch: DeviceStatePatch): Promise<DeviceSummary> => {
     const i = mutableDevices.findIndex((d) => d.id === deviceId);
     if (i < 0) {
-      throw new Error('Cube API 404: unknown device');
+      throw new Error('Cube API 404: DEVICE_NOT_FOUND: Unknown device id');
     }
     const updated = applyDevicePatch(mutableDevices[i], patch);
     mutableDevices[i] = updated;
