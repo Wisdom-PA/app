@@ -1,7 +1,15 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import type { DeviceSummary } from '../api/cubeApi.types';
 import { ListItem } from '../components/ListItem';
 import { RetryLoadDialog } from '../components/RetryLoadDialog';
@@ -17,6 +25,8 @@ export function DevicesScreen(): React.JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryOpen, setRetryOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -30,6 +40,34 @@ export function DevicesScreen(): React.JSX.Element {
       setDevices(null);
     } finally {
       setLoading(false);
+    }
+  }, [cubeApi]);
+
+  const scanForDevices = useCallback(async () => {
+    setScanning(true);
+    setError(null);
+    try {
+      const res = await cubeApi.discoverDevices();
+      setDevices(res.devices);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Discovery failed.';
+      setError(msg);
+    } finally {
+      setScanning(false);
+    }
+  }, [cubeApi]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      const res = await cubeApi.getDevices();
+      setDevices(res.devices);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Could not refresh devices.';
+      setError(msg);
+    } finally {
+      setRefreshing(false);
     }
   }, [cubeApi]);
 
@@ -59,9 +97,28 @@ export function DevicesScreen(): React.JSX.Element {
       style={styles.scroll}
       contentContainerStyle={styles.content}
       accessibilityLabel="Devices screen"
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+      }
     >
       <Text style={styles.heading}>Devices</Text>
       <Text style={styles.source}>Source: {sourceLabel}</Text>
+
+      <View style={styles.scanRow}>
+        <Pressable
+          onPress={() => void scanForDevices()}
+          disabled={scanning}
+          style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Scan for devices"
+          accessibilityHint="Runs discovery on the cube and refreshes the list"
+        >
+          <Text style={styles.scanButtonText}>{scanning ? 'Scanning…' : 'Scan for devices'}</Text>
+        </Pressable>
+        {scanning ? (
+          <ActivityIndicator style={styles.scanSpinner} accessibilityLabel="Scanning for devices" />
+        ) : null}
+      </View>
 
       {loading ? (
         <View style={styles.centered} accessibilityLabel="Devices loading">
@@ -145,8 +202,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.7,
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 8,
   },
+  scanRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    gap: 12,
+  },
+  scanButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+  },
+  scanButtonPressed: {
+    opacity: 0.85,
+  },
+  scanButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  scanSpinner: { marginLeft: 4 },
   centered: { paddingVertical: 24, alignItems: 'center' },
   errorBox: {
     marginHorizontal: 16,

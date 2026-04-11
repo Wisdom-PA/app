@@ -32,6 +32,25 @@ const emptyApi: CubeApi = {
   getDevices: async () => ({ devices: [] }),
 };
 
+/** Tap “Scan for devices” to see a synthetic discovery result. */
+const discoverStoryApi: CubeApi = {
+  ...mockCubeApi,
+  discoverDevices: async () => ({
+    status: 'complete',
+    added: 1,
+    devices: [
+      {
+        id: 'story-found',
+        name: 'Garage strip',
+        type: 'light',
+        room: 'Garage',
+        power: false,
+        brightness: 0.5,
+      },
+    ],
+  }),
+};
+
 export default {
   title: 'Screens/DevicesScreen',
   component: DevicesStack,
@@ -44,3 +63,5 @@ export const Loading = (): React.JSX.Element => withProvider(loadingApi);
 export const ErrorState = (): React.JSX.Element => withProvider(errorApi);
 
 export const EmptyList = (): React.JSX.Element => withProvider(emptyApi);
+
+export const DiscoverInteraction = (): React.JSX.Element => withProvider(discoverStoryApi);

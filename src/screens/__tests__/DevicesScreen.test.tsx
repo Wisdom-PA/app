@@ -57,4 +57,37 @@ describe('DevicesScreen', () => {
       expect(screen.getByText(/No devices reported by the cube/)).toBeTruthy();
     });
   });
+
+  it('scan for devices calls discoverDevices and replaces list', async () => {
+    const discover = jest.fn().mockResolvedValue({
+      status: 'complete' as const,
+      added: 0,
+      devices: [
+        {
+          id: 'found-1',
+          name: 'Hall light',
+          type: 'light',
+          room: 'Hall',
+          power: true,
+          brightness: 1,
+        },
+      ],
+    });
+    const api: CubeApi = {
+      ...mockCubeApi,
+      discoverDevices: discover,
+    };
+    render(withStackNavigation(DevicesStack, api));
+    await waitFor(() => {
+      expect(screen.getByText('Living room light')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Scan for devices'));
+    await waitFor(() => {
+      expect(discover).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Hall light')).toBeTruthy();
+    });
+    expect(screen.getByLabelText('Room Hall')).toBeTruthy();
+  });
 });
