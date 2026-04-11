@@ -6,6 +6,19 @@ import { mockCubeApi } from '../../api/mockCubeApi';
 import { CubeApiProvider, useCubeApiContext } from '../CubeApiContext';
 
 describe('CubeApiProvider', () => {
+  it('throws when useCubeApiContext is used outside a provider', () => {
+    const err = jest.spyOn(console, 'error').mockImplementation(() => {});
+    function Consumer(): null {
+      useCubeApiContext();
+      return null;
+    }
+    try {
+      expect(() => render(<Consumer />)).toThrow(/useCubeApiContext must be used within CubeApiProvider/);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
   it('provides mock cube API when no base URL is set', () => {
     function Probe(): React.JSX.Element {
       const { cubeBaseUrl } = useCubeApiContext();
@@ -40,6 +53,27 @@ describe('CubeApiProvider', () => {
     await waitFor(() => {
       expect(screen.getByText('9.9.9')).toBeTruthy();
     });
+  });
+
+  it('normalizes whitespace-only base URL to null', () => {
+    function Probe(): React.JSX.Element {
+      const { cubeBaseUrl, setCubeBaseUrl } = useCubeApiContext();
+      return (
+        <>
+          <Text>{cubeBaseUrl ?? 'null'}</Text>
+          <Pressable accessibilityLabel="set-ws" onPress={() => setCubeBaseUrl('  \n  ')}>
+            <Text>set</Text>
+          </Pressable>
+        </>
+      );
+    }
+    render(
+      <CubeApiProvider>
+        <Probe />
+      </CubeApiProvider>
+    );
+    fireEvent.press(screen.getByLabelText('set-ws'));
+    expect(screen.getByText('null')).toBeTruthy();
   });
 
   it('normalizes invalid base URL to null', () => {
@@ -84,6 +118,12 @@ describe('CubeApiProvider', () => {
             <Text>set</Text>
           </Pressable>
           <Pressable
+            accessibilityLabel="set-trailing"
+            onPress={() => setCubeBaseUrl('http://192.168.0.1:1/')}
+          >
+            <Text>trail</Text>
+          </Pressable>
+          <Pressable
             accessibilityLabel="fetch-status"
             onPress={() => {
               void cubeApi.getStatus().then((s) => setV(s.version));
@@ -105,6 +145,14 @@ describe('CubeApiProvider', () => {
       expect(screen.getByText('1.0.0')).toBeTruthy();
     });
     expect(fetchMock).toHaveBeenCalledWith('http://127.0.0.1:9999/status');
+
+    fetchMock.mockClear();
+    fireEvent.press(screen.getByLabelText('set-trailing'));
+    fireEvent.press(screen.getByLabelText('fetch-status'));
+    await waitFor(() => {
+      expect(screen.getByText('1.0.0')).toBeTruthy();
+    });
+    expect(fetchMock).toHaveBeenCalledWith('http://192.168.0.1:1/status');
     global.fetch = prevFetch;
   });
 });

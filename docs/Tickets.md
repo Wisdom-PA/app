@@ -11,9 +11,10 @@ Conventions:
 | Area | Status | What exists / what is next |
 | ---- | ------ | -------------------------- |
 | **Repos & CI** (GettingStarted Phase 0–3) | **Done** | `cube`, `app`, `contracts`, `backend`, `scripts`, `listener` on disk; GitHub Actions **Lint/Test** (and scripts checks) per repo. |
-| **Contracts** (cube ↔ app) | **In progress** | OpenAPI `contracts/openapi/cube-app.yaml` **v0.1**: `status`, `config`, `devices`, `routines`, `profiles`, `logs`, `backup`, `restore` (+ schemas). Extend as features land; regenerate app types when needed. |
-| **Cube (Java)** | **In progress** | Maven project, tests, Checkstyle. **Core:** `ApiGateway`, `SttService`, `TtsService`, `LlmService`, `AutomationEngine` (with `Intent` / `ActionResult` records). **Logging:** `BehaviourLogSchema` records + `BehaviourLogWriter` interface (Plan §4). **Gateway:** `HttpServerGateway` implements contract **GET** routes with stub JSON; **PATCH /config** (in-memory); **POST /backup** (empty body), **POST /restore** (no body); wrong methods **405**; unknown paths **404**. Run with `java -cp … wisdom.cube.Cube --port 8080` or **`CUBE_PORT`**. |
-| **App (React Native)** | **In progress** | Bottom tabs + stacks, **`CubeApiProvider`**. Load errors: **`RetryLoadDialog`** on list screens. **Settings**: LAN URL / mock, backup/restore, **encrypted on-device backup** (**`backupVault`**: SecureStore key + NaCl secretbox + AsyncStorage). **List → detail**: Devices, Routines, Profiles, Logs (chain JSON view). Mock logs include sample chains. Storybook updated for stacks + detail screens. **No** Bluetooth/Wi‑Fi pairing yet. |
+| **GettingStarted Phase 1–2** | **Done** | **Phase 1:** Cube scaffold + JaCoCo/Checkstyle, core service interfaces + behaviour log types, **`HttpServerGateway`** aligned with OpenAPI (incl. device PATCH, chat, internet-activity stub, `global_offline`), **`Cube.main`** with **`--port` / `CUBE_PORT`**. **Phase 2:** App scaffold, Jest + Storybook + category threshold on `cubeApi.ts`, **`mockCubeApi`** / **`createHttpCubeApi`**, base screens/stacks, shared UI components, encrypted backup, cube settings + transparency + Chat stub. |
+| **Contracts** (cube ↔ app) | **Done** (v0.1+ maintained) | OpenAPI `openapi/cube-app.yaml`: status, config, devices (list + PATCH), chat, internet-activity, routines, profiles, logs, backup, restore; CI validates/bundles spec (Redocly). Extend as features land; keep app `cubeApi.types` in sync. |
+| **Cube (Java)** | **Phase 1 complete** | As above; no OS/supervisor/voice (Phase 5+). |
+| **App (React Native)** | **Phase 2 complete** | As above; **no** production Bluetooth/Wi‑Fi pairing (Phase 10) yet—placeholders only. |
 | **Backend (optional)** | **Scaffold only** | Java `pom.xml`; no remote backup API implementation yet. |
 | **F1–F7, F10–F11 (most tasks)** | **Not started** or **spec only** | Many subtasks have ✓ spec in this file or Plan; no firmware, voice pipeline, smart home, or production profiles in code yet. |
 
@@ -72,7 +73,7 @@ Conventions:
 
 - **F2.T2 – Core service architecture**
   - **Type**: task
-  - *Progress (2026-04): S1 partially done in code — Java interfaces for STT, TTS, LLM, automation engine, API gateway; **`HttpServerGateway`** stubs OpenAPI v0.1 read paths + **PATCH /config** + backup/restore POSTs; no multi-process supervisor yet. S3 partially — behaviour log types/interfaces (`BehaviourLogSchema`, `BehaviourLogWriter`); not wired through all services.*
+  - *Progress (2026-04): **GettingStarted Phase 1 done** — S1: Java interfaces for STT, TTS, LLM, automation engine, API gateway; **`HttpServerGateway`** implements OpenAPI v0.1+ (status, config PATCH, devices list/PATCH, chat, internet-activity stub, routines, profiles, logs, backup, restore); **`Cube.main`** starts gateway with **`--port` / `CUBE_PORT`**. S2 (supervisor) not started. S3: behaviour log types/interfaces (`BehaviourLogSchema`, `BehaviourLogWriter`); not wired through voice services yet.*
   - **Subtasks:**
     - **F2.T2.S1 – Define processes and IPC between STT, TTS, LLM, automation engine, API gateway**
     - **F2.T2.S2 – Implement service supervisor (restart policies, health checks)**
@@ -357,15 +358,15 @@ Conventions:
 
 - **F9.T1 – App architecture and navigation**
   - **Type**: task
-  - *Progress (2026-04): S1 done (React Native, bottom tabs + per-tab stacks). S2 — all tab **screens** load from **`CubeApi`** via context: **Dashboard** (`/status`), **Devices** (`/devices`), **Routines** (`/routines`), **Profiles** (`/profiles`), **Logs** (`/logs`, empty-state / count when non-empty), **Settings** (cube URL + mock + backup/restore). S3 — shared `ListItem`, `Toggle`, `PlaceholderScreen`, **`ConfirmDialog`**, **`RetryLoadDialog`** (two-button retry on load failures) + Storybook/tests; **`Alert`** no longer used for retry on those screens.*
+  - *Progress (2026-04): **GettingStarted Phase 2 done.** S1 — RN, bottom tabs + per-tab stacks (+ **Chat** tab stub). S2 — screens wired to **`CubeApi`**: Dashboard, Devices (rooms + light controls), Routines, Profiles, Logs, Settings (URL, mock, backup/restore, cube settings, internet activity, pairing/Wi‑Fi placeholders), Chat (stub). S3 — `ListItem`, `Toggle`, `PlaceholderScreen`, **`ConfirmDialog`**, **`RetryLoadDialog`** + Storybook/tests.*
   - **Subtasks:**
     - **F9.T1.S1 – Choose tech stack and navigation pattern** ✓
       - **Mobile app**: TypeScript + React (React Native) for iOS/Android; single codebase.
       - **Navigation**: Bottom tab bar with per‑tab stacks (each section has its own stack for list → detail).
       - **Cube (on‑device speaker)**: Java only; strict OOP, repeatable code.
       - **Backend**: Java for any cloud/sync or remote services.
-    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *read-only lists / status wired to contract v0.1; list→detail for devices, routines, profiles; logs show chains + raw JSON detail (no device control yet)*
-    - **F9.T1.S3 – Implement shared UI components (lists, toggles, dialogs)** — *`ConfirmDialog`, `RetryLoadDialog`, Storybook/tests; **Settings** notices; two-button retry on Dashboard, Devices, Routines, Profiles, Logs*
+    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *GettingStarted **Phase 2 done**: lists/status wired to contract v0.1+; list→detail; device grouping + light controls (stub); logs chains + JSON detail; Chat tab (stub); cube settings / internet activity / pairing+Wi‑Fi placeholders*
+    - **F9.T1.S3 – Implement shared UI components (lists, toggles, dialogs)** — *`ConfirmDialog`, `RetryLoadDialog`, `ListItem`, `Toggle`, Storybook/tests; retry on load errors across main list screens*
 
 - **F9.T2 – Bluetooth pairing and secure channel**
   - **Type**: task

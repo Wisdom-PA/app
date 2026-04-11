@@ -19,6 +19,13 @@ export default {
       lines: 85,
       statements: 85,
     },
+    // Plan section 14: higher bar on the LAN HTTP client (critical path to cube)
+    './src/api/cubeApi.ts': {
+      branches: 75,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
