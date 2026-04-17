@@ -7,6 +7,9 @@ import type {
   DeviceStatePatch,
   DeviceDiscoverResponse,
   RoutineList,
+  RoutinePatch,
+  RoutineRunHistoryList,
+  RoutineSummary,
   ProfileList,
   LogQueryResult,
   ChatReply,
@@ -56,6 +59,19 @@ const MOCK_ROUTINES: RoutineList = {
   ],
 };
 
+const MOCK_ROUTINE_RUN_HISTORY: RoutineRunHistoryList = {
+  runs: [
+    {
+      run_id: '550e8400-e29b-41d4-a716-446655440002',
+      at: '2026-04-10T18:00:00Z',
+      routine_id: 'r1',
+      routine_name: 'Evening lights',
+      ok: true,
+      steps: [{ index: 0, kind: 'DEVICE_STATE', summary: 'light-1 on', ok: true }],
+    },
+  ],
+};
+
 const MOCK_PROFILES: ProfileList = {
   profiles: [
     { id: 'p1', role: 'adult', display_name: 'Adult' },
@@ -94,10 +110,17 @@ const MOCK_BACKUP_LINE = 'WISDOM-BACKUP-v0\n';
 let mutableConfig: DeviceConfig = { ...MOCK_CONFIG };
 let mutableDevices: DeviceSummary[] = initialDevices();
 
+function initialRoutines(): RoutineSummary[] {
+  return MOCK_ROUTINES.routines.map((r) => ({ ...r }));
+}
+
+let mutableRoutines: RoutineSummary[] = initialRoutines();
+
 /** Call between tests so mock config mutations do not leak. */
 export function resetMockCubeApiState(): void {
   mutableConfig = { ...MOCK_CONFIG };
   mutableDevices = initialDevices();
+  mutableRoutines = initialRoutines();
 }
 
 /** Test hook: simulate an offline device before discovery (F6.T3). */
@@ -165,7 +188,27 @@ export const mockCubeApi: CubeApi = {
     mutableDevices[i] = updated;
     return { ...updated };
   },
-  getRoutines: async (): Promise<RoutineList> => Promise.resolve(MOCK_ROUTINES),
+  getRoutines: async (): Promise<RoutineList> =>
+    Promise.resolve({ routines: mutableRoutines.map((r) => ({ ...r })) }),
+  getRoutineRunHistory: async (_params?: { limit?: number }): Promise<RoutineRunHistoryList> =>
+    Promise.resolve({
+      runs: MOCK_ROUTINE_RUN_HISTORY.runs.map((e) => ({
+        ...e,
+        steps: e.steps.map((s) => ({ ...s })),
+      })),
+    }),
+  patchRoutine: async (routineId: string, patch: RoutinePatch): Promise<RoutineSummary> => {
+    if (patch.name === undefined || patch.name.trim() === '') {
+      throw new Error('Cube API 400: ROUTINE_PATCH_INVALID: Missing or empty name');
+    }
+    const i = mutableRoutines.findIndex((r) => r.id === routineId);
+    if (i < 0) {
+      throw new Error('Cube API 404: ROUTINE_NOT_FOUND: Unknown routine id');
+    }
+    const next = { ...mutableRoutines[i], name: patch.name.trim() };
+    mutableRoutines[i] = next;
+    return { ...next };
+  },
   getProfiles: async (): Promise<ProfileList> => Promise.resolve(MOCK_PROFILES),
   getLogs: async (_params?: { since?: string; limit?: number }): Promise<LogQueryResult> =>
     Promise.resolve(MOCK_LOGS),

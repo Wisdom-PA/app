@@ -48,6 +48,15 @@ export function RoutinesScreen(): React.JSX.Element {
     >
       <Text style={styles.heading}>Routines</Text>
       <Text style={styles.source}>Source: {sourceLabel}</Text>
+      <Text
+        style={styles.historyLink}
+        onPress={() => navigation.navigate('RoutineHistory')}
+        accessibilityRole="button"
+        accessibilityLabel="Open routine run history"
+        accessibilityHint="Shows recent scheduled routine executions from the cube"
+      >
+        Recent routine runs
+      </Text>
 
       {loading ? (
         <View style={styles.centered} accessibilityLabel="Routines loading">
@@ -111,7 +120,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.7,
     paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  historyLink: {
+    fontSize: 15,
+    fontWeight: '600',
+    paddingHorizontal: 16,
     marginBottom: 12,
+    textDecorationLine: 'underline',
   },
   centered: { paddingVertical: 24, alignItems: 'center' },
   errorBox: {

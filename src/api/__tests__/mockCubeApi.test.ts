@@ -111,6 +111,28 @@ describe('mockCubeApi', () => {
     expect(list.routines.length).toBeGreaterThanOrEqual(0);
   });
 
+  it('getRoutineRunHistory returns sample runs', async () => {
+    const h = await mockCubeApi.getRoutineRunHistory({ limit: 10 });
+    expect(h.runs.length).toBeGreaterThan(0);
+    expect(h.runs[0].routine_id).toBe('r1');
+    expect(h.runs[0].steps[0].ok).toBe(true);
+  });
+
+  it('patchRoutine updates name and getRoutines reflects it', async () => {
+    const updated = await mockCubeApi.patchRoutine('r1', { name: 'Sunset' });
+    expect(updated.name).toBe('Sunset');
+    const list = await mockCubeApi.getRoutines();
+    expect(list.routines.find((r) => r.id === 'r1')?.name).toBe('Sunset');
+  });
+
+  it('patchRoutine throws for unknown id', async () => {
+    await expect(mockCubeApi.patchRoutine('nope', { name: 'X' })).rejects.toThrow(/ROUTINE_NOT_FOUND/);
+  });
+
+  it('patchRoutine throws when name empty', async () => {
+    await expect(mockCubeApi.patchRoutine('r1', { name: '   ' })).rejects.toThrow(/ROUTINE_PATCH_INVALID/);
+  });
+
   it('getProfiles returns profile list', async () => {
     const list = await mockCubeApi.getProfiles();
     expect(list.profiles.length).toBeGreaterThanOrEqual(0);

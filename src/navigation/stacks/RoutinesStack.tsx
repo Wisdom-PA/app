@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RoutinesStackParamList } from '../paramLists';
 import { RoutineDetailScreen } from '../../screens/RoutineDetailScreen';
+import { RoutineHistoryScreen } from '../../screens/RoutineHistoryScreen';
 import { RoutinesScreen } from '../../screens/RoutinesScreen';
 
 const Stack = createNativeStackNavigator<RoutinesStackParamList>();
@@ -16,6 +17,11 @@ export function RoutinesStack(): React.JSX.Element {
         options={({ route }) => ({
           title: route.params.routine.name ?? 'Routine',
         })}
+      />
+      <Stack.Screen
+        name="RoutineHistory"
+        component={RoutineHistoryScreen}
+        options={{ title: 'Routine runs' }}
       />
     </Stack.Navigator>
   );

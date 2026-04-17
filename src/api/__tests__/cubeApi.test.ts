@@ -89,6 +89,36 @@ describe('createHttpCubeApi', () => {
     expect(global.fetch).toHaveBeenCalledWith('http://h/routines');
   });
 
+  it('getRoutineRunHistory requests /routines/history with query', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ runs: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getRoutineRunHistory({ limit: 20 });
+    expect(global.fetch).toHaveBeenCalledWith('http://h/routines/history?limit=20');
+  });
+
+  it('patchRoutine sends PATCH to /routines/{id}', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'r1', name: 'Night' }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const r = await api.patchRoutine('r1', { name: 'Night' });
+    expect(r.name).toBe('Night');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://h/routines/r1',
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Night' }),
+      }),
+    );
+  });
+
   it('getProfiles requests /profiles', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

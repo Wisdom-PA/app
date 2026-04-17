@@ -258,11 +258,12 @@ Conventions:
 
 - **F6.T5 – Routine inspection and editing support**
   - **Type**: task
+  - *Progress (2026-04-17): **S1** `GET /routines/history`. **S2** Routine runs screen. **S3** `PATCH` display name + detail save. **S4** Jest + cube HTTP tests; Detox E2E deferred.*
   - **Subtasks:**
-    - **F6.T5.S1 – Implement API to fetch routine history and failed steps**
-    - **F6.T5.S2 – Link routine executions to app inspection views**
-    - **F6.T5.S3 – Allow editing routines from app and syncing back to cube**
-    - **F6.T5.S4 – Implement tests for end‑to‑end routine execution flows**
+    - **F6.T5.S1 – Implement API to fetch routine history and failed steps** *(done)*
+    - **F6.T5.S2 – Link routine executions to app inspection views** *(done)*
+    - **F6.T5.S3 – Allow editing routines from app and syncing back to cube** *(display name only)*
+    - **F6.T5.S4 – Implement tests for end‑to‑end routine execution flows** *(partial)*
 
 ---
 
