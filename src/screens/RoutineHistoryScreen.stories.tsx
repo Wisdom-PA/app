@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { CubeApiProvider } from '../context/CubeApiContext';
 import type { RoutinesStackParamList } from '../navigation/paramLists';
 import { RoutineHistoryScreen } from './RoutineHistoryScreen';
 
@@ -12,9 +13,11 @@ export default {
 };
 
 export const Default = (): React.JSX.Element => (
-  <NavigationContainer>
-    <Stack.Navigator>
-      <Stack.Screen name="RoutineHistory" component={RoutineHistoryScreen} options={{ title: 'Runs' }} />
-    </Stack.Navigator>
-  </NavigationContainer>
+  <CubeApiProvider>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="RoutineHistory" component={RoutineHistoryScreen} options={{ title: 'Runs' }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  </CubeApiProvider>
 );
