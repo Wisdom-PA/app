@@ -14,7 +14,7 @@ Conventions:
 | **GettingStarted Phase 1–2** | **Done** | **Phase 1:** Cube scaffold + JaCoCo/Checkstyle, core service interfaces + behaviour log types, **`HttpServerGateway`** aligned with OpenAPI (incl. device PATCH, chat, internet-activity feed from the in-memory behaviour log, `global_offline`), **`Cube.main`** with **`--port` / `CUBE_PORT`**. **Phase 2:** App scaffold, Jest + Storybook + category threshold on `cubeApi.ts`, **`mockCubeApi`** / **`createHttpCubeApi`**, base screens/stacks, shared UI components, encrypted backup, cube settings + transparency + Chat stub. |
 | **Contracts** (cube ↔ app) | **Done** (v0.1+ maintained) | OpenAPI `openapi/cube-app.yaml`: status, config, devices (list + PATCH), chat, internet-activity, routines, profiles, logs, backup, restore; CI validates/bundles spec (Redocly). Extend as features land; keep app `cubeApi.types` in sync. |
 | **Cube (Java)** | **Phase 1 complete** | As above; no OS/supervisor/voice (Phase 5+). |
-| **App (React Native)** | **Phase 2 complete** | As above; **no** production Bluetooth/Wi‑Fi pairing (Phase 10) yet—placeholders only. |
+| **App (React Native)** | **Phase 2 complete; Phase 10 starter** | As above; **Connectivity** wizard (Bluetooth/Wi‑Fi guidance + LAN verify via `/status`). **No** production BLE pairing or Wi‑Fi credential transfer yet. |
 | **Backend (optional)** | **Scaffold only** | Java `pom.xml`; no remote backup API implementation yet. |
 | **F1–F7, F10–F11 (most tasks)** | **Not started** or **spec only** | Many subtasks have ✓ spec in this file or Plan; no firmware, voice pipeline, smart home, or production profiles in code yet. |
 
@@ -361,18 +361,19 @@ Conventions:
 
 - **F9.T1 – App architecture and navigation**
   - **Type**: task
-  - *Progress (2026-04): **GettingStarted Phase 2 done.** S1 — RN, bottom tabs + per-tab stacks (+ **Chat** tab stub). S2 — screens wired to **`CubeApi`**: Dashboard, Devices (rooms + light controls), Routines, Profiles, Logs, Settings (URL, mock, backup/restore, cube settings, internet activity, pairing/Wi‑Fi placeholders), Chat (stub). S3 — `ListItem`, `Toggle`, `PlaceholderScreen`, **`ConfirmDialog`**, **`RetryLoadDialog`** + Storybook/tests.*
+  - *Progress (2026-04): **GettingStarted Phase 2 done.** S1 — RN, bottom tabs + per-tab stacks (+ **Chat** tab stub). S2 — screens wired to **`CubeApi`**: Dashboard, Devices (rooms + light controls), Routines, Profiles, Logs, Settings (URL, mock, backup/restore, cube settings, internet activity, **Connectivity** wizard for Phase 10), Chat (stub). S3 — `ListItem`, `Toggle`, `PlaceholderScreen`, **`ConfirmDialog`**, **`RetryLoadDialog`** + Storybook/tests.*
   - **Subtasks:**
     - **F9.T1.S1 – Choose tech stack and navigation pattern** ✓
       - **Mobile app**: TypeScript + React (React Native) for iOS/Android; single codebase.
       - **Navigation**: Bottom tab bar with per‑tab stacks (each section has its own stack for list → detail).
       - **Cube (on‑device speaker)**: Java only; strict OOP, repeatable code.
       - **Backend**: Java for any cloud/sync or remote services.
-    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *GettingStarted **Phase 2 done**: lists/status wired to contract v0.1+; list→detail; device grouping + light controls (stub); logs chains + JSON detail; Chat tab (stub); cube settings / internet activity / pairing+Wi‑Fi placeholders*
+    - **F9.T1.S2 – Implement base screens (dashboard, devices, routines, profiles, settings, logs)** — *GettingStarted **Phase 2 done**: lists/status wired to contract v0.1+; list→detail; device grouping + light controls (stub); logs chains + JSON detail; Chat tab (stub); cube settings / internet activity / **Connectivity** wizard (Phase 10 starter)*
     - **F9.T1.S3 – Implement shared UI components (lists, toggles, dialogs)** — *`ConfirmDialog`, `RetryLoadDialog`, `ListItem`, `Toggle`, Storybook/tests; retry on load errors across main list screens*
 
 - **F9.T2 – Bluetooth pairing and secure channel**
   - **Type**: task
+  - *Progress (2026-04): **Phase 10 companion slice** — **ConnectivityWizardScreen** documents the future BLE flow, links to app system settings, and shares a **Verify LAN** step with F9.T3 (below). No discovery, key exchange, or reconnection yet.*
   - **Subtasks:**
     - **F9.T2.S1 – Implement device discovery and pairing flow**
     - **F9.T2.S2 – Implement key exchange and session establishment**
@@ -381,6 +382,7 @@ Conventions:
 
 - **F9.T3 – Wi‑Fi configuration from app**
   - **Type**: task
+  - *Progress (2026-04): Same wizard tab explains provisioning; **LAN verify** calls **`getStatus()`** against the configured cube base URL (or mock) for early troubleshooting (F9.T3.S3 partial).*
   - **Subtasks:**
     - **F9.T3.S1 – Implement UI to enter Wi‑Fi credentials and network selection**
     - **F9.T3.S2 – Implement secure credential transfer to cube**

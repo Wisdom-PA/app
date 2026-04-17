@@ -24,8 +24,7 @@ export type LogsStackParamList = {
 export type SettingsStackParamList = {
   SettingsList: undefined;
   CubeSettings: undefined;
-  PairingPlaceholder: undefined;
-  WiFiPlaceholder: undefined;
+  ConnectivityWizard: { initialStep?: 'pair' | 'wifi' | 'verify' };
   InternetActivity: undefined;
 };
 
