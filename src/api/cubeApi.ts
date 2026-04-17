@@ -35,7 +35,7 @@ export interface CubeApi {
   patchProfile(profileId: string, patch: ProfilePatch): Promise<ProfileSummary>;
   getLogs(params?: { since?: string; limit?: number }): Promise<LogQueryResult>;
   sendChat(message: string): Promise<ChatReply>;
-  getInternetActivity(): Promise<InternetActivityList>;
+  getInternetActivity(params?: { limit?: number }): Promise<InternetActivityList>;
   createBackup(): Promise<ArrayBuffer>;
   restoreBackup(payload: ArrayBuffer): Promise<void>;
 }
@@ -164,8 +164,14 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
       });
       return readJson<ChatReply>(r);
     },
-    async getInternetActivity() {
-      const r = await fetch(joinUrl(baseUrl, '/internet-activity'));
+    async getInternetActivity(params) {
+      const q = new URLSearchParams();
+      if (params?.limit != null) {
+        q.set('limit', String(params.limit));
+      }
+      const qs = q.toString();
+      const path = qs ? `/internet-activity?${qs}` : '/internet-activity';
+      const r = await fetch(joinUrl(baseUrl, path));
       return readJson<InternetActivityList>(r);
     },
     async createBackup() {

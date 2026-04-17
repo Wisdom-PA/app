@@ -104,6 +104,13 @@ const MOCK_INTERNET_ACTIVITY: InternetActivityList = {
       summary: 'GET forecast (stub)',
       profile_display_name: 'Adult',
     },
+    {
+      id: 'evt-2',
+      at: '2026-04-10T11:00:00Z',
+      service_category: 'dns',
+      summary: 'resolve cube.local (stub)',
+      profile_display_name: 'Adult',
+    },
   ],
 };
 
@@ -124,12 +131,21 @@ function initialProfiles(): ProfileSummary[] {
 
 let mutableProfiles: ProfileSummary[] = initialProfiles();
 
+function initialInternetActivity(): InternetActivityList {
+  return {
+    events: MOCK_INTERNET_ACTIVITY.events.map((e) => ({ ...e })),
+  };
+}
+
+let mutableInternetActivity: InternetActivityList = initialInternetActivity();
+
 /** Call between tests so mock config mutations do not leak. */
 export function resetMockCubeApiState(): void {
   mutableConfig = { ...MOCK_CONFIG };
   mutableDevices = initialDevices();
   mutableRoutines = initialRoutines();
   mutableProfiles = initialProfiles();
+  mutableInternetActivity = initialInternetActivity();
 }
 
 /** Test hook: simulate an offline device before discovery (F6.T3). */
@@ -239,10 +255,12 @@ export const mockCubeApi: CubeApi = {
       reply: `Stub reply: ${message}`,
       source: 'on_device',
     }),
-  getInternetActivity: async (): Promise<InternetActivityList> =>
-    Promise.resolve({
-      events: MOCK_INTERNET_ACTIVITY.events.map((e) => ({ ...e })),
-    }),
+  getInternetActivity: async (params?: { limit?: number }): Promise<InternetActivityList> => {
+    const events = mutableInternetActivity.events.map((e) => ({ ...e }));
+    const limit = params?.limit ?? 50;
+    const capped = Math.max(1, Math.min(limit, 200));
+    return { events: events.slice(0, capped) };
+  },
   createBackup: async (): Promise<ArrayBuffer> => {
     const u = new TextEncoder().encode(MOCK_BACKUP_LINE);
     return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength);

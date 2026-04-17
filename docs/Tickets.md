@@ -11,7 +11,7 @@ Conventions:
 | Area | Status | What exists / what is next |
 | ---- | ------ | -------------------------- |
 | **Repos & CI** (GettingStarted Phase 0–3) | **Done** | `cube`, `app`, `contracts`, `backend`, `scripts`, `listener` on disk; GitHub Actions **Lint/Test** (and scripts checks) per repo. |
-| **GettingStarted Phase 1–2** | **Done** | **Phase 1:** Cube scaffold + JaCoCo/Checkstyle, core service interfaces + behaviour log types, **`HttpServerGateway`** aligned with OpenAPI (incl. device PATCH, chat, internet-activity stub, `global_offline`), **`Cube.main`** with **`--port` / `CUBE_PORT`**. **Phase 2:** App scaffold, Jest + Storybook + category threshold on `cubeApi.ts`, **`mockCubeApi`** / **`createHttpCubeApi`**, base screens/stacks, shared UI components, encrypted backup, cube settings + transparency + Chat stub. |
+| **GettingStarted Phase 1–2** | **Done** | **Phase 1:** Cube scaffold + JaCoCo/Checkstyle, core service interfaces + behaviour log types, **`HttpServerGateway`** aligned with OpenAPI (incl. device PATCH, chat, internet-activity feed from the in-memory behaviour log, `global_offline`), **`Cube.main`** with **`--port` / `CUBE_PORT`**. **Phase 2:** App scaffold, Jest + Storybook + category threshold on `cubeApi.ts`, **`mockCubeApi`** / **`createHttpCubeApi`**, base screens/stacks, shared UI components, encrypted backup, cube settings + transparency + Chat stub. |
 | **Contracts** (cube ↔ app) | **Done** (v0.1+ maintained) | OpenAPI `openapi/cube-app.yaml`: status, config, devices (list + PATCH), chat, internet-activity, routines, profiles, logs, backup, restore; CI validates/bundles spec (Redocly). Extend as features land; keep app `cubeApi.types` in sync. |
 | **Cube (Java)** | **Phase 1 complete** | As above; no OS/supervisor/voice (Phase 5+). |
 | **App (React Native)** | **Phase 2 complete** | As above; **no** production Bluetooth/Wi‑Fi pairing (Phase 10) yet—placeholders only. |
@@ -217,6 +217,7 @@ Conventions:
     - **F5.T3.S2 – Implement logging in all network‑using modules using this schema**
     - **F5.T3.S3 – Implement log rotation, 7‑day on‑device retention, and storage quotas**
     - **F5.T3.S4 – Expose logs to app API for both normal (simplified) and advanced (detailed) transparency views**
+  - *Progress (2026-04): On the cube, `GET /internet-activity` returns recent `InternetCallEntry` rows from `InMemoryBehaviourLogStore` (capped list, newest first, optional `limit` query). The companion app requests a limit and shows real rows when connected to a live gateway.*
 
 ---
 

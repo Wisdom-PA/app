@@ -106,6 +106,11 @@ describe('mockCubeApi', () => {
     expect(r.events[0].summary).toBeDefined();
   });
 
+  it('getInternetActivity respects limit', async () => {
+    const r = await mockCubeApi.getInternetActivity({ limit: 1 });
+    expect(r.events).toHaveLength(1);
+  });
+
   it('getRoutines returns routine list', async () => {
     const list = await mockCubeApi.getRoutines();
     expect(list.routines.length).toBeGreaterThanOrEqual(0);

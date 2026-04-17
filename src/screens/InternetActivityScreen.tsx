@@ -16,7 +16,7 @@ export function InternetActivityScreen(): React.JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      const res = await cubeApi.getInternetActivity();
+      const res = await cubeApi.getInternetActivity({ limit: 50 });
       setEvents(res.events);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not load internet activity.';
@@ -41,7 +41,8 @@ export function InternetActivityScreen(): React.JSX.Element {
         accessibilityLabel="Internet activity screen"
       >
         <Text style={styles.help}>
-          Recent outbound calls the cube reports for transparency (stub data on the mock API).
+          Recent outbound internet calls logged on the cube for transparency. The developer mock API
+          uses sample events; a real cube returns rows written by the on-device call logger.
         </Text>
         <Text style={styles.source}>Source: {sourceLabel}</Text>
         {loading ? (
