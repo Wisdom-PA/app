@@ -97,6 +97,14 @@ describe('SettingsStack', () => {
       expect(screen.getByLabelText('Cube settings')).toBeTruthy();
     });
   });
+
+  it('navigates to connectivity wizard from settings', async () => {
+    render(wrap(<SettingsStack />));
+    fireEvent.press(screen.getByLabelText('Open connectivity setup'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Connectivity setup screen')).toBeTruthy();
+    });
+  });
 });
 
 describe('ChatStack', () => {

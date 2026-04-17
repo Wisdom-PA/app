@@ -244,16 +244,10 @@ export function SettingsScreen(): React.JSX.Element {
           accessibilityLabel="Open internet activity"
         />
         <ListItem
-          title="Pairing"
-          subtitle="Bluetooth setup (placeholder)"
-          onPress={() => navigation.navigate('PairingPlaceholder')}
-          accessibilityLabel="Open pairing placeholder"
-        />
-        <ListItem
-          title="Wi‑Fi setup"
-          subtitle="Provisioning flow (placeholder)"
-          onPress={() => navigation.navigate('WiFiPlaceholder')}
-          accessibilityLabel="Open Wi-Fi setup placeholder"
+          title="Connectivity setup"
+          subtitle="Bluetooth, Wi‑Fi, and verify LAN access"
+          onPress={() => navigation.navigate('ConnectivityWizard', {})}
+          accessibilityLabel="Open connectivity setup"
         />
 
         <Text style={[styles.heading, styles.sectionHeading]}>Backup & restore</Text>
