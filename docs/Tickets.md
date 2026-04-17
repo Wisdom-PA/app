@@ -273,6 +273,7 @@ Conventions:
 
 - **F7.T1 – Profile and authentication system**
   - **Type**: task
+  - *Progress (2026-04-17): App **`patchProfile`** + profile detail save; cube/contracts **`PATCH /profiles/{id}`** (display name only). Voice/PIN/S4 not done.*
   - **Subtasks:**
     - **F7.T1.S1 – Design profile model (adult, guest, child) including: stable profile_id, preferred_name, role, basic settings (language, voice_verbosity, internet_policy), per-role permissions (adults full control, guests limited devices, children restricted devices), routine ownership rules (creator-owned routines unless shared with household; guest/child routines always household-editable), and linked adults with full visibility into child activity**
     - **F7.T1.S2 – Implement profile selection via voice and PIN**

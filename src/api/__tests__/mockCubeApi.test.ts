@@ -138,6 +138,21 @@ describe('mockCubeApi', () => {
     expect(list.profiles.length).toBeGreaterThanOrEqual(0);
   });
 
+  it('patchProfile updates display_name and getProfiles reflects it', async () => {
+    const updated = await mockCubeApi.patchProfile('p1', { display_name: 'Primary' });
+    expect(updated.display_name).toBe('Primary');
+    const list = await mockCubeApi.getProfiles();
+    expect(list.profiles.find((p) => p.id === 'p1')?.display_name).toBe('Primary');
+  });
+
+  it('patchProfile throws for unknown id', async () => {
+    await expect(mockCubeApi.patchProfile('nope', { display_name: 'X' })).rejects.toThrow(/PROFILE_NOT_FOUND/);
+  });
+
+  it('patchProfile throws when display_name empty', async () => {
+    await expect(mockCubeApi.patchProfile('p1', { display_name: '   ' })).rejects.toThrow(/PROFILE_PATCH_INVALID/);
+  });
+
   it('getLogs returns sample chains for UI drill-down', async () => {
     const result = await mockCubeApi.getLogs();
     expect(result.chains).toHaveLength(2);

@@ -11,6 +11,8 @@ import type {
   RoutineRunHistoryList,
   RoutineSummary,
   ProfileList,
+  ProfilePatch,
+  ProfileSummary,
   LogQueryResult,
   ChatReply,
   InternetActivityList,
@@ -30,6 +32,7 @@ export interface CubeApi {
   getRoutineRunHistory(params?: { limit?: number }): Promise<RoutineRunHistoryList>;
   patchRoutine(routineId: string, patch: RoutinePatch): Promise<RoutineSummary>;
   getProfiles(): Promise<ProfileList>;
+  patchProfile(profileId: string, patch: ProfilePatch): Promise<ProfileSummary>;
   getLogs(params?: { since?: string; limit?: number }): Promise<LogQueryResult>;
   sendChat(message: string): Promise<ChatReply>;
   getInternetActivity(): Promise<InternetActivityList>;
@@ -130,6 +133,15 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
     async getProfiles() {
       const r = await fetch(joinUrl(baseUrl, '/profiles'));
       return readJson<ProfileList>(r);
+    },
+    async patchProfile(profileId, patch) {
+      const path = `/profiles/${encodeURIComponent(profileId)}`;
+      const r = await fetch(joinUrl(baseUrl, path), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      return readJson<ProfileSummary>(r);
     },
     async getLogs(params) {
       const q = new URLSearchParams();

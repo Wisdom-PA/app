@@ -130,6 +130,25 @@ describe('createHttpCubeApi', () => {
     expect(global.fetch).toHaveBeenCalledWith('http://h/profiles');
   });
 
+  it('patchProfile sends PATCH to /profiles/{id}', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 'p1', role: 'adult', display_name: 'Lead' }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    const p = await api.patchProfile('p1', { display_name: 'Lead' });
+    expect(p.display_name).toBe('Lead');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://h/profiles/p1',
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ display_name: 'Lead' }),
+      }),
+    );
+  });
+
   it('getConfig requests /config', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
