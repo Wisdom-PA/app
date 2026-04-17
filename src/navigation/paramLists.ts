@@ -8,6 +8,7 @@ export type DevicesStackParamList = {
 export type RoutinesStackParamList = {
   RoutinesList: undefined;
   RoutineDetail: { routine: RoutineSummary };
+  RoutineHistory: undefined;
 };
 
 export type ProfilesStackParamList = {

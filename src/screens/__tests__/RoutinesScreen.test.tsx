@@ -1,10 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
-import { mockCubeApi } from '../../api/mockCubeApi';
+import { mockCubeApi, resetMockCubeApiState } from '../../api/mockCubeApi';
 import { RoutinesStack } from '../../navigation/stacks/RoutinesStack';
 import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('RoutinesScreen', () => {
+  beforeEach(() => {
+    resetMockCubeApiState();
+  });
+
   it('loads routines from mock API and exposes screen label', async () => {
     render(withStackNavigation(RoutinesStack));
     expect(screen.getByLabelText('Routines screen')).toBeTruthy();
@@ -13,6 +17,17 @@ describe('RoutinesScreen', () => {
     });
     expect(screen.getByText('Good morning')).toBeTruthy();
     expect(screen.getByText(/Mock cube/)).toBeTruthy();
+  });
+
+  it('navigates to routine history from link', async () => {
+    render(withStackNavigation(RoutinesStack));
+    await waitFor(() => {
+      expect(screen.getByText('Evening lights')).toBeTruthy();
+    });
+    fireEvent.press(screen.getByLabelText('Open routine run history'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('Routine history screen')).toBeTruthy();
+    });
   });
 
   it('shows error when API fails', async () => {

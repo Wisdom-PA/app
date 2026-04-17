@@ -85,6 +85,32 @@ export interface RoutineList {
   routines: RoutineSummary[];
 }
 
+export interface RoutinePatch {
+  name?: string;
+}
+
+export interface RoutineRunStep {
+  index: number;
+  kind: string;
+  summary: string;
+  ok: boolean;
+  error_code?: string | null;
+  error_message?: string | null;
+}
+
+export interface RoutineRunEntry {
+  run_id: string;
+  at: string;
+  routine_id: string;
+  routine_name: string;
+  ok: boolean;
+  steps: RoutineRunStep[];
+}
+
+export interface RoutineRunHistoryList {
+  runs: RoutineRunEntry[];
+}
+
 export interface ProfileSummary {
   id: string;
   role?: 'adult' | 'guest' | 'child';

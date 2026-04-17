@@ -7,6 +7,9 @@ import type {
   DeviceStatePatch,
   DeviceDiscoverResponse,
   RoutineList,
+  RoutinePatch,
+  RoutineRunHistoryList,
+  RoutineSummary,
   ProfileList,
   LogQueryResult,
   ChatReply,
@@ -24,6 +27,8 @@ export interface CubeApi {
   discoverDevices(): Promise<DeviceDiscoverResponse>;
   patchDevice(deviceId: string, patch: DeviceStatePatch): Promise<DeviceSummary>;
   getRoutines(): Promise<RoutineList>;
+  getRoutineRunHistory(params?: { limit?: number }): Promise<RoutineRunHistoryList>;
+  patchRoutine(routineId: string, patch: RoutinePatch): Promise<RoutineSummary>;
   getProfiles(): Promise<ProfileList>;
   getLogs(params?: { since?: string; limit?: number }): Promise<LogQueryResult>;
   sendChat(message: string): Promise<ChatReply>;
@@ -102,6 +107,25 @@ export function createHttpCubeApi(baseUrl: string): CubeApi {
     async getRoutines() {
       const r = await fetch(joinUrl(baseUrl, '/routines'));
       return readJson<RoutineList>(r);
+    },
+    async getRoutineRunHistory(params) {
+      const q = new URLSearchParams();
+      if (params?.limit != null) {
+        q.set('limit', String(params.limit));
+      }
+      const qs = q.toString();
+      const path = qs ? `/routines/history?${qs}` : '/routines/history';
+      const r = await fetch(joinUrl(baseUrl, path));
+      return readJson<RoutineRunHistoryList>(r);
+    },
+    async patchRoutine(routineId, patch) {
+      const path = `/routines/${encodeURIComponent(routineId)}`;
+      const r = await fetch(joinUrl(baseUrl, path), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      return readJson<RoutineSummary>(r);
     },
     async getProfiles() {
       const r = await fetch(joinUrl(baseUrl, '/profiles'));
