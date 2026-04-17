@@ -328,4 +328,15 @@ describe('createHttpCubeApi', () => {
     expect(r.events).toEqual([]);
     expect(global.fetch).toHaveBeenCalledWith('http://h/internet-activity');
   });
+
+  it('getInternetActivity passes limit query when set', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ events: [] }),
+    } as unknown as Response);
+
+    const api = createHttpCubeApi('http://h');
+    await api.getInternetActivity({ limit: 20 });
+    expect(global.fetch).toHaveBeenCalledWith('http://h/internet-activity?limit=20');
+  });
 });
