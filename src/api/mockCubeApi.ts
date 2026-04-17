@@ -11,6 +11,8 @@ import type {
   RoutineRunHistoryList,
   RoutineSummary,
   ProfileList,
+  ProfilePatch,
+  ProfileSummary,
   LogQueryResult,
   ChatReply,
   InternetActivityList,
@@ -116,11 +118,18 @@ function initialRoutines(): RoutineSummary[] {
 
 let mutableRoutines: RoutineSummary[] = initialRoutines();
 
+function initialProfiles(): ProfileSummary[] {
+  return MOCK_PROFILES.profiles.map((p) => ({ ...p }));
+}
+
+let mutableProfiles: ProfileSummary[] = initialProfiles();
+
 /** Call between tests so mock config mutations do not leak. */
 export function resetMockCubeApiState(): void {
   mutableConfig = { ...MOCK_CONFIG };
   mutableDevices = initialDevices();
   mutableRoutines = initialRoutines();
+  mutableProfiles = initialProfiles();
 }
 
 /** Test hook: simulate an offline device before discovery (F6.T3). */
@@ -209,7 +218,20 @@ export const mockCubeApi: CubeApi = {
     mutableRoutines[i] = next;
     return { ...next };
   },
-  getProfiles: async (): Promise<ProfileList> => Promise.resolve(MOCK_PROFILES),
+  getProfiles: async (): Promise<ProfileList> =>
+    Promise.resolve({ profiles: mutableProfiles.map((p) => ({ ...p })) }),
+  patchProfile: async (profileId: string, patch: ProfilePatch): Promise<ProfileSummary> => {
+    if (patch.display_name === undefined || patch.display_name.trim() === '') {
+      throw new Error('Cube API 400: PROFILE_PATCH_INVALID: Missing or empty display_name');
+    }
+    const i = mutableProfiles.findIndex((p) => p.id === profileId);
+    if (i < 0) {
+      throw new Error('Cube API 404: PROFILE_NOT_FOUND: Unknown profile id');
+    }
+    const next = { ...mutableProfiles[i], display_name: patch.display_name.trim() };
+    mutableProfiles[i] = next;
+    return { ...next };
+  },
   getLogs: async (_params?: { since?: string; limit?: number }): Promise<LogQueryResult> =>
     Promise.resolve(MOCK_LOGS),
   sendChat: async (message: string): Promise<ChatReply> =>

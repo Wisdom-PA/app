@@ -1,10 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { CubeApi } from '../../api/cubeApi';
-import { mockCubeApi } from '../../api/mockCubeApi';
+import { mockCubeApi, resetMockCubeApiState } from '../../api/mockCubeApi';
 import { ProfilesStack } from '../../navigation/stacks/ProfilesStack';
 import { withStackNavigation } from '../../test/withStackNavigation';
 
 describe('ProfilesScreen', () => {
+  beforeEach(() => {
+    resetMockCubeApiState();
+  });
+
   it(
     'loads profiles from mock API and exposes screen label',
     async () => {

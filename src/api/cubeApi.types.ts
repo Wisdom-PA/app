@@ -117,6 +117,10 @@ export interface ProfileSummary {
   display_name?: string;
 }
 
+export interface ProfilePatch {
+  display_name?: string;
+}
+
 export interface ProfileList {
   profiles: ProfileSummary[];
 }
